@@ -5,7 +5,7 @@
 **Riccardo Guidotti**, University of Pisa, Italy, riccardo.guidotti@unipi.it \
 **Salvatore Ruggieri**, University of Pisa, Italy, salvatore.ruggieri@unipi.it 
 
-We present XSPELLS, a model-agnostic local approach for explain-ing the decisions black box models for sentiment classification of short texts. The explanations provided consist of a set of exemplar sentences and a set of counter-exemplar sentences. The former are examples classified by the blackbox with the same label as the text to explain. The latter are examples classified with a different label (a form of counter-factuals). Both are close in meaning to the text to explain, and both are meaningful sentences – albeit they aresynthetically generated. XSPELLS generates neighbors of the text to explain ina latent space using Variational Autoencoders for encoding text and decodinglatent instances. A decision tree is learned from randomly generated neighbors,and used to drive the selection of the exemplars and counter-exemplars. Moreover, diversity of counter-exemplars is modeled as an optimization problem,solved by a greedy algorithm with theoretical  guarantee. We report experiments on three datasets showing that XSPELLS outperforms the well-known LIME method in terms of quality of explanations, fidelity, diversity, and use-fulness, and that is comparable to it in terms of stability.
+We present XSPELLS, a model-agnostic local approach for explain-ing the decisions black box models for sentiment classification of short texts. The explanations provided consist of a set of exemplar sentences and a set of counter-exemplar sentences. The former are examples classified by the blackbox with the same label as the text to explain. The latter are examples classified with a different label (a form of counter-factuals). Both are close in meaning to the text to explain, and both are meaningful sentences – albeit they aresynthetically generated. XSPELLS generates neighbors of the text to explain ina latent space using Variational Autoencoders for encoding text and decodinglatent instances. A decision tree is learned from randomly generated neighbors, and used to drive the selection of the exemplars and counter-exemplars. Moreover, diversity of counter-exemplars is modeled as an optimization problem, solved by a greedy algorithm with theoretical guarantee. We report experiments on three datasets showing that XSPELLS outperforms the well-known LIME method in terms of quality of explanations, fidelity, diversity, and usefulness, and that is comparable to it in terms of stability.
 
 ## Comments
 
@@ -17,7 +17,7 @@ Here, we uploaded basic data as well as source code files for the SVAE and BVAE.
 
 ### OVAE: Optimus Variational Autoencoder
 
-We used the framwork introduced in the paper "Optimus: Organizing Sentences via Pre-trained Modeling of a Latent Space" that can be found here: https://github.com/ChunyuanLI/Optimus
+We used the framework introduced in the paper "Optimus: Organizing Sentences via Pre-trained Modeling of a Latent Space" that can be found here: https://github.com/ChunyuanLI/Optimus
 
 The corresponding code and pretrained models are available here: https://github.com/ChunyuanLI/Optimus
 
@@ -26,6 +26,6 @@ To get the code running, it is necesary to pull a docker container and link it t
 
 ## References
 
-O. Lampridis, R. Guidotti, S. Ruggieri. Explaining Sentiment Classification with Synthetic Exemplars and Counter-Exemplars. Discovery Science (DS 2020). 357-373. Vol. 12323 of LNCS, Springer, September 202
+O. Lampridis, R. Guidotti, S. Ruggieri. Explaining Sentiment Classification with Synthetic Exemplars and Counter-Exemplars. Discovery Science (DS 2020). 357-373. Vol. 12323 of LNCS, Springer, September 2020
 
 Li, Chunyuan and Gao, Xiang and Li, Yuan and Li, Xiujun and Peng, Baolin and Zhang, Yizhe and Gao, Jianfeng, Optimus: Organizing Sentences via Pre-trained Modeling of a Latent Space, EMNLP, 2020
