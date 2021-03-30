@@ -13,7 +13,7 @@ The paper is a follow-up of "Explaining Sentiment Classification with Synthetic 
 
 The code of XSPELLS is available under this link: https://github.com/orestislampridis/X-SPELLS
 
-Here, we uploaded basic data as well as source code files for the SVAE and BVAE. Computations for the OVAE are the same but require a few substitutions for data loading. We also the version of lime we used.
+Here, we uploaded basic data as well as source code files for the SVAE and BVAE. Computations for the OVAE are the same but require a few substitutions for data loading. We also uploaded the version of lime we used.
 
 ### OVAE: Optimus Variational Autoencoder
 
