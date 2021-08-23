@@ -1,10 +1,10 @@
 """
 Functions for explaining text classifiers.
 """
-from functools import partial
 import itertools
 import json
 import re
+from functools import partial
 
 import numpy as np
 import scipy as sp

@@ -10,7 +10,6 @@ import sys
 
 import numpy as np
 from keras.wrappers.scikit_learn import KerasClassifier
-from lime.lime_text import LimeTextExplainer
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
 
@@ -19,6 +18,7 @@ from DNN_base import TextsToSequences, Padder, create_model
 sys.path.insert(0, '..')
 from preprocessing import pre_processing
 from statistics import stdev
+from lime.lime_text import LimeTextExplainer
 
 
 def calculate_fidelity():

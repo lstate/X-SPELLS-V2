@@ -10,11 +10,11 @@ import sys
 
 import numpy as np
 from keras.wrappers.scikit_learn import KerasClassifier
-from lime.lime_text import LimeTextExplainer
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
 
 from DNN_base import TextsToSequences, Padder, create_model
+from lime.lime_text import LimeTextExplainer
 
 sys.path.insert(0, '..')
 from preprocessing.pre_processing import YOUTUBE_get_text_data
@@ -76,7 +76,7 @@ class_names = ['no spam', 'spam']
 
 sequencer = TextsToSequences(num_words=35000)
 padder = Padder(140)
-myModel = KerasClassifier(build_fn=create_model, epochs=1)
+myModel = KerasClassifier(build_fn=create_model, epochs=100)
 
 pipeline = make_pipeline(sequencer, padder, myModel)
 pipeline.fit(X_train, y_train)

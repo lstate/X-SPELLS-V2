@@ -8,21 +8,15 @@ import csv
 import pickle
 import re
 import string
+import sys
 
 import numpy as np
-import pandas as pd
-import sklearn
-from lime.lime_text import LimeTextExplainer
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer
+
+sys.path.insert(0, '..')
+from lime.lime_text import LimeTextExplainer
 from statistics import stdev
-
-from pre_processing import get_text_data
-
-
 
 
 def cleanText(var):

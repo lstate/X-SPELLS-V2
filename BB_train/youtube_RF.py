@@ -6,17 +6,18 @@ Also calculate fidelity of LIME explanations when using the RF used for the fide
 
 import csv
 import pickle
+import sys
 
 import numpy as np
-import sklearn
-from lime.lime_text import LimeTextExplainer
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer
-from statistics import stdev
 
-from pre_processing import YOUTUBE_get_text_data
+sys.path.insert(0, '..')
+from lime.lime_text import LimeTextExplainer
+from statistics import stdev
+from preprocessing.pre_processing import YOUTUBE_get_text_data
 
 
 def calculate_fidelity():
