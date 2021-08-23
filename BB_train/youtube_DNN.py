@@ -6,6 +6,7 @@ Also calculate fidelity of LIME explanations when using the DNN used for the fid
 
 import csv
 import pickle
+import sys
 
 import numpy as np
 from keras.wrappers.scikit_learn import KerasClassifier
@@ -14,9 +15,10 @@ from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
 
 from DNN_base import TextsToSequences, Padder, create_model
-from pre_processing import YOUTUBE_get_text_data
-from statistics import stdev
 
+sys.path.insert(0, '..')
+from preprocessing.pre_processing import YOUTUBE_get_text_data
+from statistics import stdev
 
 
 def calculate_fidelity():
@@ -68,28 +70,29 @@ def calculate_fidelity():
             writer.writerow([ids[i], 'youtube', 'DNN', fidelities[i]])
 
 
-_, _, y_train, y_test, X_train, X_test = YOUTUBE_get_text_data("data/YouTube-Spam-Collection-v1/youtube.csv", "youtube")
+_, _, y_train, y_test, X_train, X_test = YOUTUBE_get_text_data("../data/YouTube-Spam-Collection-v1/youtube.csv",
+                                                               "youtube")
 class_names = ['no spam', 'spam']
 
 sequencer = TextsToSequences(num_words=35000)
 padder = Padder(140)
-myModel = KerasClassifier(build_fn=create_model, epochs=100)
+myModel = KerasClassifier(build_fn=create_model, epochs=1)
 
 pipeline = make_pipeline(sequencer, padder, myModel)
 pipeline.fit(X_train, y_train)
 
 # Save the model to disk
-filename = 'models/youtube_saved_DNN_model_redone.sav'
+filename = '../models/youtube_saved_DNN_model_redone.sav'
 pickle.dump(pipeline, open(filename, 'wb'))
 
 # Load the model from disk
 loaded_model = pickle.load(open(filename, 'rb'))
 
 # Computing interesting metrics/classification report
-#pred = pipeline.predict(X_test)
+pred = pipeline.predict(X_test)
 pred = loaded_model.predict(X_test)
 print(classification_report(y_test, pred))
 print("The accuracy score is {:.2%}".format(accuracy_score(y_test, pred)))
 
 # Following is used to calculate fidelity for all instances using LIME
-calculate_fidelity()
+# calculate_fidelity()
