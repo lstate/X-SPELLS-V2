@@ -6,42 +6,18 @@ Also calculate fidelity of LIME explanations when using the RF used for the fide
 
 import csv
 import pickle
-import re
-import string
 import sys
 
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
 
 sys.path.insert(0, '..')
+from preprocessing import pre_processing
 from lime.lime_text import LimeTextExplainer
 from statistics import stdev
-
-
-def cleanText(var):
-    # replace punctuation with spaces
-    var = re.sub('[{}]'.format(string.punctuation), " ", var)
-    # remove double spaces
-    var = re.sub(r'\s+', " ", var)
-    # put in lower case
-    var = var.lower().split()
-    # remove words that are smaller than 2 characters
-    var = [w for w in var if len(w) >= 3]
-    # remove stop-words
-    # var = [w for w in var if w not in stopwords.words('english')]
-    # stemming
-    # stemmer = nltk.PorterStemmer()
-    # var = [stemmer.stem(w) for w in var]
-    var = " ".join(var)
-    return var
-
-
-def preProcessing(pX):
-    clean_tweet_texts = []
-    for t in pX:
-        clean_tweet_texts.append(cleanText(t))
-    return clean_tweet_texts
 
 
 def calculate_fidelity():
@@ -57,7 +33,7 @@ def calculate_fidelity():
     ids = list()
     fidelities = list()
 
-    #for i in range(len(X_test)):
+    # for i in range(len(X_test)):
     for i in range(100):
         print('index', i)
         # Generate an explanation with at most n features for a random document in the test set.
@@ -93,32 +69,33 @@ def calculate_fidelity():
         for i in range(len(ids)):
             writer.writerow([ids[i], 'polarity', 'RF', fidelities[i]])
 
-_, _, y_train, y_test, X_train, X_test = get_text_data("data/polarity_tweets.csv", "polarity")
+
+_, _, y_train, y_test, X_train, X_test = pre_processing.get_text_data("../data/polarity_tweets.csv", "polarity")
 class_names = ['negative', 'positive']
 
 # We'll use the TF-IDF vectorizer, commonly used for text.
-#vectorizer = TfidfVectorizer(sublinear_tf='false')
-#train_vectors = vectorizer.fit_transform(X_train)
-#pickle.dump(vectorizer, open("models/polarity_tfidf_vectorizer.pickle", "wb"))
+vectorizer = TfidfVectorizer(sublinear_tf='false')
+train_vectors = vectorizer.fit_transform(X_train)
+pickle.dump(vectorizer, open("../models/polarity_tfidf_vectorizer.pickle", "wb"))
 
-vectorizer = pickle.load(open("models/polarity_tfidf_vectorizer.pickle", 'rb'))
+vectorizer = pickle.load(open("../models/polarity_tfidf_vectorizer.pickle", 'rb'))
 
 test_vectors = vectorizer.transform(X_test)
 
 # Using random forest for classification.
-#rf = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-#                            max_depth=1000, max_features=1000, max_leaf_nodes=None,
-#                            min_impurity_decrease=0.0, min_impurity_split=None,
-#                            min_samples_leaf=4, min_samples_split=10,
-#                            min_weight_fraction_leaf=0.0, n_estimators=400, n_jobs=None,
-#                            oob_score=False, random_state=None, verbose=0,
-#                            warm_start=False)
+rf = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+                            max_depth=1000, max_features=1000, max_leaf_nodes=None,
+                            min_impurity_decrease=0.0, min_impurity_split=None,
+                            min_samples_leaf=4, min_samples_split=10,
+                            min_weight_fraction_leaf=0.0, n_estimators=400, n_jobs=None,
+                            oob_score=False, random_state=None, verbose=0,
+                            warm_start=False)
 
-#rf.fit(train_vectors, y_train)
+rf.fit(train_vectors, y_train)
 
 # Save the model to disk
-filename = 'models/polarity_saved_RF_model.sav'
-#pickle.dump(rf, open(filename, 'wb'))
+filename = '../models/polarity_saved_RF_model.sav'
+pickle.dump(rf, open(filename, 'wb'))
 
 # Load the model from disk
 loaded_model = pickle.load(open(filename, 'rb'))

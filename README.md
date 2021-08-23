@@ -34,7 +34,16 @@ To install the conda environment necessary to try out xspells run the following 
 conda env create -f environment.yml
 ```
 
-Afterwards
+In the BB_train directory, you can find the .py files to train the black boxes for all the datasets. As an example, to
+train the DNN black box for the hate speech dataset, we need to run the following command in the BB_train dir:
+
+```
+python hate_tweets_DNN.py
+```
+
+Afterwards, the model is saved inside the models directory for later use.
+
+Next up, we can train the VAEs
 
 ## Licenses
 
