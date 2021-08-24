@@ -19,12 +19,15 @@ but require a few substitutions for data loading. We also uploaded the version o
 ### OVAE: Optimus Variational Autoencoder
 
 We used the framework introduced in the paper "Optimus: Organizing Sentences via Pre-trained Modeling of a Latent Space"
-that can be found here: https://github.com/ChunyuanLI/Optimus
+that can be found (code and models) here: https://github.com/ChunyuanLI/Optimus
 
-The corresponding code and pretrained models are available here: https://github.com/ChunyuanLI/Optimus
+To get the code running, proceed as follows:
 
-To get the code running, it is necesary to pull a docker container and link it to the code. Inside of the container, the
-fine-tuning and generation of sentences can be done.
+1) Downloand code and one pretrained model 
+2) Pull the docker container of the project
+3) Link the container to the optimus code/models
+
+Scripts and more details on how to get the models running are provided on the website. Some adaptation is necessary, e.g. to set data paths in the scripts accordingly or to insert code lines on generating examples in the latent space (no conceptual changes).
 
 ## Instructions
 
