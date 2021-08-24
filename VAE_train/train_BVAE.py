@@ -3,6 +3,7 @@ Trains the VAE model and saves it inside models for later use
 """
 
 import string
+import sys
 from collections import Counter
 
 import numpy as np
@@ -10,12 +11,14 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from sklearn.model_selection import train_test_split
 
+sys.path.insert(0, '..')
+
 from lstm_vae import create_lstm_vae, inference
-from pre_processing import preProcessing
+from preprocessing.pre_processing import preProcessing
 
 
 def get_text_data(num_samples, data_path, dataset):
-    thousandwords = [line.rstrip('\n') for line in open('data/1-1000.txt')]
+    thousandwords = [line.rstrip('\n') for line in open('../data/1-1000.txt')]
 
     print('thousandwords', thousandwords)
     # vectorize the data
@@ -116,7 +119,7 @@ def decode(s):
 
 if __name__ == "__main__":
     dataset_name = 'polarity'
-    res = get_text_data(num_samples=20000, data_path='data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
+    res = get_text_data(num_samples=20000, data_path='../data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
 
     max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
@@ -136,7 +139,7 @@ if __name__ == "__main__":
     print("Training VAE model...")
 
     vae.fit([encoder_input_data, decoder_input_data], encoder_input_data, epochs=epochs, verbose=1)
-    vae.save('models/' + dataset_name + '_vae_model.h5', overwrite=True)
-    enc.save('models/' + dataset_name + '_enc_model.h5', overwrite=True)
-    gen.save('models/' + dataset_name + '_gen_model.h5', overwrite=True)
-    stepper.save('models/' + dataset_name + '_stepper_model.h5', overwrite=True)
+    vae.save('../models/' + dataset_name + '_vae_model.h5', overwrite=True)
+    enc.save('../models/' + dataset_name + '_enc_model.h5', overwrite=True)
+    gen.save('../models/' + dataset_name + '_gen_model.h5', overwrite=True)
+    stepper.save('../models/' + dataset_name + '_stepper_model.h5', overwrite=True)

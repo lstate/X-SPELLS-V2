@@ -43,7 +43,18 @@ python hate_tweets_DNN.py
 
 Afterwards, the model is saved inside the models directory for later use.
 
-Next up, we can train the VAEs
+Next up, we can train the VAEs, located in the VAE_train folder. To train the BVAE for the hate speech or the polarity
+dataset, type the following command in the VAE_train dir:
+
+```
+python train_BVAE.py
+```
+
+Make sure to change the dataset you want to use from inside the code. You can also use the youtube dataset by running
+the `youtube_train_vae.py`.
+
+Finally, you can use the `create_explanations.ipynb` notebook to use the models created above and produce the
+explanations.
 
 ## Licenses
 
