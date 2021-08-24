@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import string
+import sys
 from collections import Counter
 
 import numpy as np
@@ -9,16 +10,13 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from sklearn.model_selection import train_test_split
 
+sys.path.insert(0, '..')
+
 from lstm_vae import create_lstm_vae, inference
-from pre_processing import preProcessing
+from preprocessing.pre_processing import preProcessing
 
-import sklearn
-from scipy.spatial.distance import cdist
-from statistics import stdev
 
-import keras
-
-# updated function 
+# updated function
 # additional split into test and training set
 # most common words only extracted from the training set
 # num encoder seq length: training set and 0.1 "safety margin"
@@ -26,7 +24,7 @@ import keras
 # parameter num_samples: can we omit it
 
 def get_text_data(num_samples, data_path, dataset):
-    thousandwords = [line.rstrip('\n') for line in open('data/1-1000.txt')]
+    thousandwords = [line.rstrip('\n') for line in open('../data/1-1000.txt')]
 
     print('thousandwords', thousandwords)
     # vectorize the data
@@ -174,7 +172,7 @@ def decode(s):
 
 dataset_name = 'hate'
 
-res = get_text_data(num_samples=20000, data_path='data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
+res = get_text_data(num_samples=20000, data_path='../data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
 
 max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, encoder_input_data_train, decoder_input_data_train, input_texts_original, X_, y_, X_trains_sub, X_test_sub, y_train_sub, y_test_sub, encoder_input_data_test, decoder_input_data_test, input_texts_original_test, new_X_train_subsplit, new_X_test_subsplit = res
 
@@ -189,22 +187,22 @@ intermediate_dim = 256
 epochs = 100
 
 vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
-                                                       batch_size=batch_size,
-                                                       intermediate_dim=intermediate_dim,
-                                                       latent_dim=latent_dim)
+                                                   batch_size=batch_size,
+                                                   intermediate_dim=intermediate_dim,
+                                                   latent_dim=latent_dim)
 
 print("Training VAE model...")
 
-vae.fit([encoder_input_data_train, decoder_input_data_train], encoder_input_data_train, epochs=epochs, verbose=1, validation_data= ([encoder_input_data_test, decoder_input_data_test], encoder_input_data_test))
+vae.fit([encoder_input_data_train, decoder_input_data_train], encoder_input_data_train, epochs=epochs, verbose=1,
+        validation_data=([encoder_input_data_test, decoder_input_data_test], encoder_input_data_test))
 
 np.save('vae_training_history_hate_100_75_25.npy', vae.history.history)
 
 # safe the trained autoencoder
 
-vae.save('models/' + dataset_name + '_vae_model_hate_100_75_25.h5', overwrite=True)
-enc.save('models/' + dataset_name + '_enc_model_hate_100_75_25.h5', overwrite=True)
-gen.save('models/' + dataset_name + '_gen_model_hate_100_75_25.h5', overwrite=True)
-stepper.save('models/' + dataset_name + '_stepper_model_hate_100_75_25.h5', overwrite=True)
-    
-print("successfully trained + saved")
+vae.save('../models/' + dataset_name + '_vae_model_hate_100_75_25.h5', overwrite=True)
+enc.save('../models/' + dataset_name + '_enc_model_hate_100_75_25.h5', overwrite=True)
+gen.save('../models/' + dataset_name + '_gen_model_hate_100_75_25.h5', overwrite=True)
+stepper.save('../models/' + dataset_name + '_stepper_model_hate_100_75_25.h5', overwrite=True)
 
+print("successfully trained + saved")

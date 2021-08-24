@@ -6,46 +6,19 @@ Also calculate fidelity of LIME explanations when using the DNN used for the fid
 
 import csv
 import pickle
-import re
-import string
+import sys
 
 import numpy as np
-import pandas as pd
 from keras.wrappers.scikit_learn import KerasClassifier
-from lime.lime_text import LimeTextExplainer
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
-from statistics import stdev
-
-from pre_processing import get_text_data
 
 from DNN_base import TextsToSequences, Padder, create_model
 
-
-def cleanText(var):
-    # replace punctuation with spaces
-    var = re.sub('[{}]'.format(string.punctuation), " ", var)
-    # remove double spaces
-    var = re.sub(r'\s+', " ", var)
-    # put in lower case
-    var = var.lower().split()
-    # remove words that are smaller than 2 characters
-    var = [w for w in var if len(w) >= 2]
-    # remove stop-words
-    # var = [w for w in var if w not in stopwords.words('english')]
-    # stemming
-    # stemmer = nltk.PorterStemmer()
-    # var = [stemmer.stem(w) for w in var]
-    var = " ".join(var)
-    return var
-
-
-def preProcessing(pX):
-    clean_tweet_texts = []
-    for t in pX:
-        clean_tweet_texts.append(cleanText(t))
-    return clean_tweet_texts
+sys.path.insert(0, '..')
+from preprocessing import pre_processing
+from statistics import stdev
+from lime.lime_text import LimeTextExplainer
 
 
 def calculate_fidelity():
@@ -58,7 +31,7 @@ def calculate_fidelity():
     for i, e in enumerate(X_test):
         print(str(i + 1) + '.', e)
 
-    #for i in range(len(X_test)):
+    # for i in range(len(X_test)):
     for i in range(100):
         print('index: ', i)
         # Generate an explanation with at most n features for a random document in the test set.
@@ -75,7 +48,7 @@ def calculate_fidelity():
         print('lr_probs: ', lr_probs)
         fidelity = np.sum(np.abs(bb_probs - lr_probs) < 0.05) / len(bb_probs)
         print('fidelity: ', fidelity)
-        #print('np.sum: ', np.sum(np.abs(bb_probs - lr_probs) < 0.01))
+        # print('np.sum: ', np.sum(np.abs(bb_probs - lr_probs) < 0.01))
         ids.append(i)
         fidelities.append(fidelity)
         print('')
@@ -95,28 +68,29 @@ def calculate_fidelity():
         for i in range(len(ids)):
             writer.writerow([ids[i], 'polarity', 'DNN', fidelities[i]])
 
-_, _, y_train, y_test, X_train, X_test = get_text_data("data/polarity_tweets.csv", "polarity")
+
+_, _, y_train, y_test, X_train, X_test = pre_processing.get_text_data("../data/polarity_tweets.csv", "polarity")
 class_names = ['negative', 'positive']
 
-#sequencer = TextsToSequences(num_words=35000)
-#padder = Padder(140)
-#myModel = KerasClassifier(build_fn=create_model, epochs=100)
+sequencer = TextsToSequences(num_words=35000)
+padder = Padder(140)
+myModel = KerasClassifier(build_fn=create_model, epochs=100)
 
-#pipeline = make_pipeline(sequencer, padder, myModel)
-#pipeline.fit(X_train, y_train)
+pipeline = make_pipeline(sequencer, padder, myModel)
+pipeline.fit(X_train, y_train)
 
 # Save the model to disk
-filename = 'models/polarity_saved_DNN_model.sav'
-#pickle.dump(pipeline, open(filename, 'wb'))
+filename = '../models/polarity_saved_DNN_model.sav'
+pickle.dump(pipeline, open(filename, 'wb'))
 
 # Load the model from disk
 loaded_model = pickle.load(open(filename, 'rb'))
 
 # Computing interesting metrics/classification report
-# pred = pipeline.predict(X_test)
+pred = pipeline.predict(X_test)
 pred = loaded_model.predict(X_test)
 print(classification_report(y_test, pred))
 print("The accuracy score is {:.2%}".format(accuracy_score(y_test, pred)))
 
 # Following is used to calculate fidelity for all instances using LIME
-calculate_fidelity()
+# calculate_fidelity()
