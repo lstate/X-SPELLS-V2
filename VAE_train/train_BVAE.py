@@ -1,7 +1,7 @@
 """
 Trains the VAE model and saves it inside models for later use
 """
-
+import os
 import string
 import sys
 from collections import Counter
@@ -16,9 +16,12 @@ sys.path.insert(0, '..')
 from lstm_vae import create_lstm_vae, inference
 from preprocessing.pre_processing import preProcessing
 
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-def get_text_data(num_samples, data_path, dataset):
-    thousandwords = [line.rstrip('\n') for line in open('../data/1-1000.txt')]
+
+def get_text_data(num_samples, dataset):
+    thousandwords = [line.rstrip('\n') for line in open(os.path.join(__location__, '../data/1-1000.txt'))]
 
     print('thousandwords', thousandwords)
     # vectorize the data
@@ -27,17 +30,52 @@ def get_text_data(num_samples, data_path, dataset):
     input_words = set(["\t"])
     all_input_words = []
     lines = []
-    df = pd.read_csv(data_path, encoding='utf-8')
 
     if dataset == "polarity":
+        df = pd.read_csv('../data/' + dataset_name + '_tweets.csv', encoding='utf-8')
         X = df['tweet'].values
         y = df['class'].values
+
     elif dataset == "hate":
+        df = pd.read_csv('../data/' + dataset_name + '_tweets.csv', encoding='utf-8')
         # Removing the offensive comments, keeping only neutral and hatespeech,
         # and convert the class value from 2 to 1 for simplification purposes
         df = df[df['class'] != 1]
         X = df['tweet'].values
         y = df['class'].apply(lambda x: 1 if x == 2 else 0).values
+
+    elif dataset == "liar":
+        df_train = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/train.tsv"), encoding='utf-8', sep='\t')
+        df_test = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/test.tsv"), encoding='utf-8', sep='\t')
+        df_val = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/valid.tsv"), encoding='utf-8', sep='\t')
+
+        mapping = {'pants-fire': 0,
+                   'false': 2,
+                   'barely-true': 2,
+                   'half-true': 2,
+                   'mostly-true': 2,
+                   'true': 1}
+
+        df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(lambda x: mapping[x])
+        df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(lambda x: mapping[x])
+        df_val.iloc[:, 1] = df_val.iloc[:, 1].apply(lambda x: mapping[x])
+
+        # Removing middle columns
+        df_train = df_train[df_train.iloc[:, 1] != 2]
+        df_test = df_test[df_test.iloc[:, 1] != 2]
+        df_val = df_val[df_val.iloc[:, 1] != 2]
+
+        X_train = df_train.iloc[:, 2].values
+        y_train = df_train.iloc[:, 1].values
+        X_test = df_test.iloc[:, 2].values
+        y_test = df_test.iloc[:, 1].values
+        X_val = df_val.iloc[:, 2].values
+        y_val = df_val.iloc[:, 1].values
+
+        Xtt = np.append(X_train, X_test)
+        ytt = np.append(y_train, y_test)
+        X = np.append(Xtt, X_val)
+        y = np.append(ytt, y_val)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
@@ -118,8 +156,8 @@ def decode(s):
 
 
 if __name__ == "__main__":
-    dataset_name = 'polarity'
-    res = get_text_data(num_samples=20000, data_path='../data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
+    dataset_name = 'liar'
+    res = get_text_data(num_samples=20000, dataset=dataset_name)
 
     max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
@@ -130,7 +168,13 @@ if __name__ == "__main__":
     batch_size = 1
     latent_dim = 500
     intermediate_dim = 256
-    epochs = 100
+
+    if dataset_name == 'hate':
+        epochs = 200
+    elif dataset_name == 'polarity':
+        epochs = 250
+    elif dataset_name == 'liar':
+        epochs = 300
 
     vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
                                                        batch_size=batch_size,
