@@ -168,8 +168,8 @@ def calculate_MRE():
                                                  train_decoded_sentences_vectors[i].reshape(1, -1),
                                                  metric='cosine').ravel())[0])
 
-    print(train_sentences_dict)
-    print(train_cosine_distance_list)
+    # print(train_sentences_dict)
+    # print(train_cosine_distance_list)
     print("MRE train: ", sum(train_cosine_distance_list) / len(train_cosine_distance_list))
     print("MRE train stdev: ", stdev(train_cosine_distance_list))
 

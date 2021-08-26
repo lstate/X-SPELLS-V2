@@ -82,6 +82,8 @@ def get_text_data(num_samples, dataset):
     # we use "best possible case" only i.e. only test data
     new_X_test = preProcessing(X_test)
 
+    print(len(X_test))
+
     for line in new_X_test:
         input_texts_original.append(line)
         lines.append(
@@ -113,6 +115,8 @@ def get_text_data(num_samples, dataset):
     print(most_common_words)
 
     input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts]
+
+    print(len(input_texts_cleaned))
 
     final_input_words = sorted(list(set(most_common_words)))
     num_encoder_tokens = len(final_input_words)
