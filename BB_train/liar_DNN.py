@@ -79,10 +79,10 @@ df_test = pd.read_csv("../data/liar_dataset/test.tsv", encoding='utf-8', sep='\t
 df_val = pd.read_csv("../data/liar_dataset/valid.tsv", encoding='utf-8', sep='\t')
 
 mapping = {'pants-fire': 0,
-           'false': 2,
-           'barely-true': 2,
-           'half-true': 2,
-           'mostly-true': 2,
+           'false': 0,
+           'barely-true': 0,
+           'half-true': 1,
+           'mostly-true': 1,
            'true': 1}
 
 df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(lambda x: mapping[x])
@@ -117,7 +117,7 @@ print(len(X_test))
 
 class_names = ['fake-news', 'real-news']
 
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=1)
 class_weight = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
 
 sequencer = TextsToSequences(num_words=35000)

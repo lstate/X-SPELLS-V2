@@ -77,10 +77,10 @@ df_test = pd.read_csv("../data/liar_dataset/test.tsv", encoding='utf-8', sep='\t
 df_val = pd.read_csv("../data/liar_dataset/valid.tsv", encoding='utf-8', sep='\t')
 
 mapping = {'pants-fire': 0,
-           'false': 2,
-           'barely-true': 2,
-           'half-true': 2,
-           'mostly-true': 2,
+           'false': 0,
+           'barely-true': 0,
+           'half-true': 1,
+           'mostly-true': 1,
            'true': 1}
 
 df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(lambda x: mapping[x])
@@ -88,9 +88,9 @@ df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(lambda x: mapping[x])
 df_val.iloc[:, 1] = df_val.iloc[:, 1].apply(lambda x: mapping[x])
 
 # Removing middle columns
-df_train = df_train[df_train.iloc[:, 1] != 2]
-df_test = df_test[df_test.iloc[:, 1] != 2]
-df_val = df_val[df_val.iloc[:, 1] != 2]
+# df_train = df_train[df_train.iloc[:, 1] != 2]
+# df_test = df_test[df_test.iloc[:, 1] != 2]
+# df_val = df_val[df_val.iloc[:, 1] != 2]
 
 X_train = df_train.iloc[:, 2].values
 y_train = df_train.iloc[:, 1].values

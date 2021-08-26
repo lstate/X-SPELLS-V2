@@ -151,6 +151,7 @@ def calculate_MRE():
         mean, variance = enc.predict([[encoder_input_data[i]]])
         seq = np.random.normal(size=(latent_dim,))
         seq = mean + variance * seq
+        seq = mean
         print('original: ', X_original_processed[i])
         print('reconstructed: ', decode(seq))
         train_input_sentences.append(X_original_processed[i])

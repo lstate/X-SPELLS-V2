@@ -100,4 +100,22 @@ def predict_lr(texts):
 
 
 nlp = spacy.load('en_core_web_sm')
-explainer = anchor_text.AnchorText(nlp, ['negative', 'positive'], use_unk_distribution=True)
+explainer = anchor_text.AnchorText(nlp, ['negative', 'positive'], use_unk_distribution=False)
+
+np.random.seed(1)
+text = 'america is white trash and so are all americans'
+pred = explainer.class_names[predict_lr([text])[0]]
+alternative = explainer.class_names[1 - predict_lr([text])[0]]
+print('Prediction: %s' % pred)
+exp = explainer.explain_instance(text, predict_lr, threshold=0.95)
+
+print('Anchor: %s' % (' AND '.join(exp.names())))
+print('Precision: %.2f' % exp.precision())
+print()
+print('Examples where anchor applies and model predicts %s:' % pred)
+print()
+print('\n'.join([x[0] for x in exp.examples(only_same_prediction=True)]))
+print()
+print('Examples where anchor applies and model predicts %s:' % alternative)
+print()
+print('\n'.join([x[0] for x in exp.examples(partial_index=0, only_different_prediction=True)]))

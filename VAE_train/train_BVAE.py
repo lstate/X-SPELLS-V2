@@ -50,10 +50,10 @@ def get_text_data(num_samples, dataset):
         df_val = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/valid.tsv"), encoding='utf-8', sep='\t')
 
         mapping = {'pants-fire': 0,
-                   'false': 2,
-                   'barely-true': 2,
-                   'half-true': 2,
-                   'mostly-true': 2,
+                   'false': 0,
+                   'barely-true': 0,
+                   'half-true': 1,
+                   'mostly-true': 1,
                    'true': 1}
 
         df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(lambda x: mapping[x])
@@ -122,9 +122,7 @@ def get_text_data(num_samples, dataset):
     num_encoder_tokens = len(final_input_words)
     max_encoder_seq_length = max([len(txt) for txt in input_texts_cleaned]) + 1
 
-    print("input_texts_cleaned", input_texts_cleaned)
-    print(most_common_words)
-    print(final_input_words)
+    print(len(input_texts_cleaned))
 
     print("Number of samples:", len(input_texts_cleaned))
     print("Number of unique input tokens:", num_encoder_tokens)
@@ -178,7 +176,7 @@ if __name__ == "__main__":
     elif dataset_name == 'polarity':
         epochs = 250
     elif dataset_name == 'liar':
-        epochs = 300
+        epochs = 200
 
     vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
                                                        batch_size=batch_size,
