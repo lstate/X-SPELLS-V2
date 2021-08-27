@@ -111,30 +111,43 @@ X_test_trump = preProcessing(X_test_trump)
 X_biden = np.append(X_train_biden, X_test_biden)
 y_biden = np.append(y_train_biden, y_test_biden)
 
-X_trump = np.append(X_train_biden, X_test_biden)
+X_trump = np.append(X_train_trump, X_test_trump)
 y_trump = np.append(y_train_trump, y_test_trump)
+
+"""
 
 (unique, counts) = np.unique(y_biden, return_counts=True)
 frequencies = np.asarray((unique, counts)).T
 
 print(frequencies)
 print(len(y_biden))
+print(len(X_biden))
 
 (unique, counts) = np.unique(y_trump, return_counts=True)
 frequencies = np.asarray((unique, counts)).T
 
 print(frequencies)
 print(len(y_trump))
+print(len(X_trump))
 
-print(len(y_biden) + len(y_trump))
+"""
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
+X_total = np.append(X_biden, X_trump)
+print(len(X_total))
 
-print(len(X_train))
-print(len(X_test))
+Xb_train, Xb_test, yb_train, yb_test = train_test_split(X_biden, y_biden, random_state=42, stratify=y_biden,
+                                                        test_size=0.25)
+Xt_train, Xt_test, yt_train, yt_test = train_test_split(X_trump, y_trump, random_state=42, stratify=y_trump,
+                                                        test_size=0.25)
+
+print(len(Xb_train))
+print(len(Xb_test))
+
+print(len(Xt_train))
+print(len(Xt_test))
 
 wordcounts = list()
-for sentence in X:
+for sentence in X_total:
     # with nltk tokenize
     nltk_tokens = nltk.word_tokenize(sentence)
     # naive way, splitting words by spaces
@@ -147,65 +160,55 @@ no_tweets = len(wordcounts)
 print(average_wordcount)
 print(no_tweets)
 
-class_names = ['fake-news', 'real-news']
+Xb_train = preProcessing(Xb_train)
+Xt_train = preProcessing(Xt_train)
+Xb_test = preProcessing(Xb_test)
+Xt_test = preProcessing(Xt_test)
+
+class_names = ['against', 'favor']
 
 # We'll use the TF-IDF vectorizer, commonly used for text.
-vectorizer = TfidfVectorizer()
-train_vectors = vectorizer.fit_transform(X_train)
-pickle.dump(vectorizer, open("../models/liar_tfidf_vectorizer.pickle", "wb"))
+vectorizer_b = TfidfVectorizer()
+vectorizer_t = TfidfVectorizer()
+
+train_vectors_b = vectorizer_b.fit_transform(Xb_train)
+pickle.dump(vectorizer_b, open("../models/stance_biden_tfidf_vectorizer.pickle", "wb"))
+
+train_vectors_t = vectorizer_t.fit_transform(Xt_train)
+pickle.dump(vectorizer_t, open("../models/stance_trump_tfidf_vectorizer.pickle", "wb"))
 
 # if we run only fidelity, we need to reload the vectorizer
-vectorizer = pickle.load(open("../models/liar_tfidf_vectorizer.pickle", 'rb'))
+vectorizer_b = pickle.load(open("../models/stance_biden_tfidf_vectorizer.pickle", 'rb'))
+vectorizer_t = pickle.load(open("../models/stance_trump_tfidf_vectorizer.pickle", 'rb'))
 
-test_vectors = vectorizer.transform(X_test)
+test_vectors_b = vectorizer_b.transform(Xb_test)
+test_vectors_t = vectorizer_t.transform(Xt_test)
 
 # Using random forest for classification.
-rf = RandomForestClassifier(class_weight="balanced")
+rf_b = RandomForestClassifier(class_weight="balanced")
+rf_t = RandomForestClassifier(class_weight="balanced")
 
-'''
-# Number of trees in random forest
-n_estimators = [int(x) for x in np.linspace(start = 200, stop = 2000, num = 10)]
-# Number of features to consider at every split
-max_features = ['auto', 'sqrt']
-# Maximum number of levels in tree
-max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
-max_depth.append(None)
-# Minimum number of samples required to split a node
-min_samples_split = [2, 5, 10]
-# Minimum number of samples required at each leaf node
-min_samples_leaf = [1, 2, 4]
-# Method of selecting samples for training each tree
-bootstrap = [True, False]
-
-# Create the random grid
-random_grid = {'n_estimators': n_estimators,
-               'max_features': max_features,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap}
-print(random_grid)
-
-# Random search of parameters, using 3 fold cross validation, 
-# search across 100 different combinations, and use all available cores
-rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid,
-                               n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
-# Fit the random search model
-'''
-
-rf.fit(train_vectors, y_train)
+rf_b.fit(train_vectors_b, yb_train)
+rf_t.fit(train_vectors_t, yt_train)
 
 # save the model to disk
-filename = '../models/liars_saved_RF_model.sav'
-pickle.dump(rf, open(filename, 'wb'))
+pickle.dump(rf_b, open('../models/stance_biden_saved_RF_model.sav', 'wb'))
+pickle.dump(rf_t, open('../models/stance_trump_saved_RF_model.sav', 'wb'))
 
 # load the model from disk
-loaded_model = pickle.load(open(filename, 'rb'))
+loaded_model_b = pickle.load(open('../models/stance_biden_saved_RF_model.sav', 'rb'))
+loaded_model_t = pickle.load(open('../models/stance_trump_saved_RF_model.sav', 'rb'))
 
 # Computing interesting metrics/classification report
-pred = loaded_model.predict(test_vectors)
-print(classification_report(y_test, pred))
-print("The accuracy score is {:.2%}".format(accuracy_score(y_test, pred)))
+pred_b = loaded_model_b.predict(test_vectors_b)
+print("================ Biden model =================")
+print(classification_report(yb_test, pred_b))
+print("The accuracy score is {:.2%}".format(accuracy_score(yb_test, pred_b)))
+
+pred_t = loaded_model_t.predict(test_vectors_t)
+print("================ Trump model =================")
+print(classification_report(yt_test, pred_t))
+print("The accuracy score is {:.2%}".format(accuracy_score(yt_test, pred_t)))
 
 # Following is used to calculate fidelity for all instances using LIME
 # calculate_fidelity()
