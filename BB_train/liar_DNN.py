@@ -145,4 +145,4 @@ print(classification_report(y_test, pred))
 print("The accuracy score is {:.2%}".format(accuracy_score(y_test, pred)))
 
 # Following is used to calculate fidelity for all instances using LIME
-# calculate_fidelity()
+calculate_fidelity()

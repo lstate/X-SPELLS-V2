@@ -3,6 +3,7 @@ Train a RF black box model for the liar dataset.
 
 Also calculate fidelity of LIME explanations when using the RF used for the fidelity experiment
 """
+
 import csv
 import pickle
 import sys
@@ -20,7 +21,6 @@ from sklearn.pipeline import make_pipeline
 sys.path.insert(0, '..')
 from preprocessing.pre_processing import preProcessing
 from lime.lime_text import LimeTextExplainer
-
 
 def calculate_fidelity():
     # Lime explainers assume that classifiers act on raw text, but sklearn classifiers act on
@@ -188,4 +188,4 @@ print(classification_report(y_test, pred))
 print("The accuracy score is {:.2%}".format(accuracy_score(y_test, pred)))
 
 # Following is used to calculate fidelity for all instances using LIME
-# calculate_fidelity()
+calculate_fidelity()

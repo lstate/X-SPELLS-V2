@@ -176,7 +176,7 @@ if __name__ == "__main__":
     elif dataset_name == 'polarity':
         epochs = 250
     elif dataset_name == 'liar':
-        epochs = 200
+        epochs = 300
 
     vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
                                                        batch_size=batch_size,
