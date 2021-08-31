@@ -176,7 +176,7 @@ rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid
 rf.fit(train_vectors, y_train)
 
 # save the model to disk
-filename = '../models/liars_saved_RF_model.sav'
+filename = '../models/liar_saved_RF_model.sav'
 pickle.dump(rf, open(filename, 'wb'))
 
 # load the model from disk

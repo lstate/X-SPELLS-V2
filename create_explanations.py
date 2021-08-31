@@ -187,7 +187,7 @@ def generate_sentences(number_of_sentences, number_of_max_attempts, number_of_ra
 
     for i in range(number_of_sentences):
 
-        print("sentence : ", i)
+        print("sentence : %d/%d" % (i, number_of_sentences))
         seq_from = latent_space_state[i]
 
         number_of_ticks = 0
@@ -206,9 +206,8 @@ def generate_sentences(number_of_sentences, number_of_max_attempts, number_of_ra
                 state_sentences[i].append(newseq)
                 decoded_sentences[i].append(decode(newseq))
 
-            print(len(decoded_sentences[i]))
             number_of_ticks += 1
-            print(number_of_ticks)
+            print('unique/tick ratio: %d/%d' % (len(decoded_sentences[i]), number_of_ticks))
 
     return state_sentences, decoded_sentences
 
@@ -539,7 +538,7 @@ def pickle_dump_files():
 
 def create_explanations_csv():
     """
-    Creates csv with final explanations along with outher results from X-SPELLS run
+    Creates csv with final explanations along with other results from X-SPELLS run
     :return:
     """
     with open('output/' + dataset_name + '_' + model_name + '.csv', mode='w', newline='') as file:
@@ -561,18 +560,18 @@ if __name__ == "__main__":
     dataset_name = "liar"
     # Insert 'RF' or 'DNN' as black box model
     model_name = "RF"
-    pickled_black_box_filename = '../models/' + dataset_name + '_saved_' + model_name + '_model.sav'
+    pickled_black_box_filename = 'models/' + dataset_name + '_saved_' + model_name + '_model.sav'
 
     if model_name == "RF":
-        pickled_vectorizer_filename = '../models/' + dataset_name + '_tfidf_vectorizer.pickle'
+        pickled_vectorizer_filename = 'models/' + dataset_name + '_tfidf_vectorizer.pickle'
     elif model_name == "DNN":
         # Insert None in vectorizer if black box is DNN
         pickled_vectorizer_filename = None
 
-    mode = "DISTANCE"  # DIVERSITY OR DISTANCE
+    mode = "DIVERSITY"  # DIVERSITY OR DISTANCE
 
     # For how many sentences we want to run X-SPELLS
-    no_of_sentences = 10
+    no_of_sentences = 100
     latent_dim = 500
     nbr_features = latent_dim
 
@@ -588,7 +587,7 @@ if __name__ == "__main__":
     input_dim = encoder_input_data.shape[-1]
 
     vae, enc, gen, stepper = load_VAE(dataset_name)
-    calculate_MRE()
+    # calculate_MRE()
 
     in_sentences, latent_space_state, decoded_sentences = get_sentences()
     smallest_x, largest_x = calculate_min_max(np.array(latent_space_state))
