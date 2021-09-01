@@ -5,6 +5,7 @@ Also calculate fidelity of LIME explanations when using the DNN used for the fid
 """
 
 import csv
+import os
 import pickle
 import sys
 
@@ -12,6 +13,8 @@ import numpy as np
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
+
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from DNN_base import TextsToSequences, Padder, create_model
 

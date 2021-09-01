@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import MinMaxScaler
 
 import decision_tree
-from BB_train.DNN_base import TextsToSequences, Padder, create_model
+from DNN_base import TextsToSequences, Padder, create_model
 from VAE_train.train_BVAE import get_text_data
 from VAE_train.youtube_train_vae import YOUTUBE_get_text_data
 from lstm_vae import inference
@@ -214,8 +214,8 @@ def generate_sentences(number_of_sentences, number_of_max_attempts, number_of_ra
 
 def get_predictions(bb_filename, vect_filename, number_of_sentences):
     # Load the black box model from disk
-    filename = bb_filename
-    loaded_model = pickle.load(open(filename, 'rb'))
+    print(bb_filename)
+    loaded_model = pickle.load(open(bb_filename, 'rb'))
 
     preds = [[] for _ in range(number_of_sentences)]
 
@@ -559,7 +559,7 @@ if __name__ == "__main__":
     # Insert 'hate' or 'polarity' as dataset
     dataset_name = "liar"
     # Insert 'RF' or 'DNN' as black box model
-    model_name = "RF"
+    model_name = "DNN"
     pickled_black_box_filename = 'models/' + dataset_name + '_saved_' + model_name + '_model.sav'
 
     if model_name == "RF":
@@ -571,7 +571,7 @@ if __name__ == "__main__":
     mode = "DIVERSITY"  # DIVERSITY OR DISTANCE
 
     # For how many sentences we want to run X-SPELLS
-    no_of_sentences = 100
+    no_of_sentences = 1
     latent_dim = 500
     nbr_features = latent_dim
 
@@ -597,6 +597,7 @@ if __name__ == "__main__":
                                                                                 number_of_random_sentences=200,
                                                                                 probability=0.4)
 
+    print(pickled_black_box_filename)
     predictions, final_state_sentences, final_decoded_sentences = get_predictions(pickled_black_box_filename,
                                                                                   pickled_vectorizer_filename,
                                                                                   no_of_sentences)

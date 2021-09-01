@@ -5,6 +5,7 @@ Also calculate fidelity of LIME explanations when using the DNN used for the fid
 """
 
 import csv
+import os
 import pickle
 import sys
 
@@ -15,6 +16,8 @@ from sklearn.pipeline import make_pipeline
 
 from DNN_base import TextsToSequences, Padder, create_model
 from lime.lime_text import LimeTextExplainer
+
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 sys.path.insert(0, '..')
 from preprocessing.pre_processing import YOUTUBE_get_text_data
