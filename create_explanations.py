@@ -237,7 +237,7 @@ def get_predictions(bb_filename, vect_filename, number_of_sentences):
             print(loaded_model.predict(final_unique_decoded_sentences[i]).flatten())
 
             preds[i] = loaded_model.predict(final_unique_decoded_sentences[i]).flatten()
-        preds = preds[0]
+        # preds = preds[0]
     else:
         # Load the TF-IDF vectorizer of the respective dataset
         vectorizer = pickle.load(open(vect_filename, 'rb'))
@@ -269,6 +269,9 @@ def find_closest_k_latent_sentences(state_sentences, decoded_sentences, predicti
     positive_predictions = list()
     instance_state_sentence = state_sentences[0]
     instance_decoded_sentence = decoded_sentences[0]
+
+    print(predictions)
+
     instance_prediction = predictions[0]
 
     for i in range(1, len(state_sentences)):
