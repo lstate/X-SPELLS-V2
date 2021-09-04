@@ -66,7 +66,7 @@ def calculate_fidelity():
     print("fidelity average is: ", fidelity_average / len(ids))
     print("fidelity stdev is:", stdev(fidelities))
 
-    with open('output/LIME_hs_RF.csv', mode='w', newline='') as file:
+    with open('../output/LIME_l_RF.csv', mode='w', newline='') as file:
         writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for i in range(len(ids)):
             writer.writerow([ids[i], 'hate speech', 'RF', fidelities[i]])
