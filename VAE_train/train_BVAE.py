@@ -78,9 +78,11 @@ def get_text_data(num_samples, dataset):
         y = np.append(ytt, y_val)
 
     elif dataset == 'question':
-        df_train = pd.read_csv("../data/question_dataset/question_train.txt", encoding='ISO-8859-1', sep=':',
+        df_train = pd.read_csv((os.path.join(__location__, "../data/question_dataset/question_train.txt")),
+                               encoding='ISO-8859-1', sep=':',
                                error_bad_lines=False, header=None)
-        df_test = pd.read_csv("../data/question_dataset/question_test.txt", encoding='ISO-8859-1', sep=':',
+        df_test = pd.read_csv((os.path.join(__location__, "../data/question_dataset/question_test.txt")),
+                              encoding='ISO-8859-1', sep=':',
                               error_bad_lines=False, header=None)
 
         def remove_first_word(string):
@@ -211,7 +213,7 @@ def decode(s):
 
 
 if __name__ == "__main__":
-    dataset_name = 'question'
+    dataset_name = 'liar'
     res = get_text_data(num_samples=20000, dataset=dataset_name)
 
     max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
