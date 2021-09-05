@@ -77,6 +77,59 @@ def get_text_data(num_samples, dataset):
         X = np.append(Xtt, X_val)
         y = np.append(ytt, y_val)
 
+    elif dataset == 'question':
+        df_train = pd.read_csv("../data/question_dataset/question_train.txt", encoding='ISO-8859-1', sep=':',
+                               error_bad_lines=False, header=None)
+        df_test = pd.read_csv("../data/question_dataset/question_test.txt", encoding='ISO-8859-1', sep=':',
+                              error_bad_lines=False, header=None)
+
+        def remove_first_word(string):
+            return string.partition(' ')[2]
+
+        df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(remove_first_word)
+        df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(remove_first_word)
+
+        X_train = df_train.iloc[:, 1].values
+        y_train = df_train.iloc[:, 0].values
+        X_test = df_test.iloc[:, 1].values
+        y_test = df_test.iloc[:, 0].values
+
+        X_train = preProcessing(X_train)
+        X_test = preProcessing(X_test)
+
+        X = np.append(X_train, X_test)
+        y = np.append(y_train, y_test)
+
+        (unique, counts) = np.unique(y, return_counts=True)
+        frequencies = np.asarray((unique, counts)).T
+
+        print(frequencies)
+        print(len(y))
+        print(len(X))
+
+        # Which class to define as 0 depends on the distribution of data.
+        # We pick the class with the largest number of instances.
+        mapping = {'DESC': 1,
+                   'ENTY': 0,
+                   'ABBR': 1,
+                   'HUM': 1,
+                   'NUM': 1,
+                   'LOC': 1}
+
+        df_train.iloc[:, 0] = df_train.iloc[:, 0].apply(lambda x: mapping[x])
+        df_test.iloc[:, 0] = df_test.iloc[:, 0].apply(lambda x: mapping[x])
+
+        X_train = df_train.iloc[:, 1].values
+        y_train = df_train.iloc[:, 0].values
+        X_test = df_test.iloc[:, 1].values
+        y_test = df_test.iloc[:, 0].values
+
+        X_train = preProcessing(X_train)
+        X_test = preProcessing(X_test)
+
+        X = np.append(X_train, X_test)
+        y = np.append(y_train, y_test)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
     # we use "best possible case" only i.e. only test data
@@ -158,7 +211,7 @@ def decode(s):
 
 
 if __name__ == "__main__":
-    dataset_name = 'liar'
+    dataset_name = 'question'
     res = get_text_data(num_samples=20000, dataset=dataset_name)
 
     max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
@@ -177,6 +230,8 @@ if __name__ == "__main__":
         epochs = 250
     elif dataset_name == 'liar':
         epochs = 300
+    elif dataset_name == 'question':
+        epochs = 200
 
     vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
                                                        batch_size=batch_size,
