@@ -596,10 +596,6 @@ if __name__ == "__main__":
     X_original = X_test_subsplit
     y_original = y_test_subsplit
     X_original_processed = preProcessing(X_test_subsplit)
-
-    print(X_original)
-    print(X_original_processed)
-
     input_dim = encoder_input_data.shape[-1]
 
     vae, enc, gen, stepper = load_VAE(dataset_name)

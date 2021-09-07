@@ -143,6 +143,7 @@ def get_text_data(num_samples, dataset):
         input_texts_original.append(line)
         lines.append(
             line.lower().translate(str.maketrans('', '', string.punctuation)))  # lowercase and remove punctuation
+
     print(lines)
 
     for line in lines[: min(num_samples, len(lines) - 1)]:
@@ -169,7 +170,8 @@ def get_text_data(num_samples, dataset):
 
     print(most_common_words)
 
-    input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts]
+    input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts if
+                           len(text) < 500]
 
     print(len(input_texts_cleaned))
 
