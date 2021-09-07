@@ -17,7 +17,7 @@ from sklearn.pipeline import make_pipeline
 
 from DNN_base import TextsToSequences, Padder, create_model
 from lime.lime_text import LimeTextExplainer
-from preprocessing.pre_processing import get_text_data, YOUTUBE_get_text_data
+from preprocessing.pre_processing import get_text_data, YOUTUBE_get_text_data, preProcessing
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -95,9 +95,9 @@ def create_lime_explanation_words():
         pickle.dump(top_lime_words, f)
 
 
-datasetName = "liar"  # dataset name
+datasetName = "question"  # dataset name
 modelName = "RF"  # 'RF' or 'DNN'
-method = "lime"  # 'lime' or 'xspells'
+method = "xspells"  # 'lime' or 'xspells'
 closest_k = 10  # How big the neighborhood should be in sentences
 
 if datasetName == "youtube":
@@ -148,6 +148,45 @@ if datasetName == "liar":
 
     _, X, _, y = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
+if datasetName == 'question':
+    df_train = pd.read_csv("../data/question_dataset/question_train.txt", encoding='ISO-8859-1', sep=':',
+                           error_bad_lines=False, header=None)
+    df_test = pd.read_csv("../data/question_dataset/question_test.txt", encoding='ISO-8859-1', sep=':',
+                          error_bad_lines=False, header=None)
+
+
+    def remove_first_word(string):
+        return string.partition(' ')[2]
+
+
+    df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(remove_first_word)
+    df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(remove_first_word)
+
+    # Which class to define as 0 depends on the distribution of data.
+    # We pick the class with the largest number of instances. (calculated on question_RF.py)
+    mapping = {'DESC': 1,
+               'ENTY': 0,
+               'ABBR': 1,
+               'HUM': 1,
+               'NUM': 1,
+               'LOC': 1}
+
+    df_train.iloc[:, 0] = df_train.iloc[:, 0].apply(lambda x: mapping[x])
+    df_test.iloc[:, 0] = df_test.iloc[:, 0].apply(lambda x: mapping[x])
+
+    X_train = df_train.iloc[:, 1].values
+    y_train = df_train.iloc[:, 0].values
+    X_test = df_test.iloc[:, 1].values
+    y_test = df_test.iloc[:, 0].values
+
+    X_train = preProcessing(X_train)
+    X_test = preProcessing(X_test)
+
+    X = np.append(X_train, X_test)
+    y = np.append(y_train, y_test)
+
+    _, X, _, y = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
+
 print(X)
 print(y)
 
@@ -178,11 +217,13 @@ else:
     c = make_pipeline(loaded_vectorizer, loaded_model)
 
 explainer = LimeTextExplainer()
-create_lime_explanation_words()
+# create_lime_explanation_words()
 
 if method is 'xspells':
     top_words_dict = dict(zip(loaded_ids, loaded_top_exemplar_words))
 else:
+    create_lime_explanation_words()
+
     with open('../data/' + datasetName + '_' + modelName + '_' + 'lime_top_words', 'rb') as f:
         loaded_top_lime_words = pickle.load(f)
     top_words_dict = dict(zip(loaded_ids, loaded_top_lime_words))

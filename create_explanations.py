@@ -14,6 +14,7 @@ from nltk.corpus import stopwords
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 import decision_tree
@@ -21,6 +22,7 @@ from DNN_base import TextsToSequences, Padder, create_model
 from VAE_train.train_BVAE import get_text_data
 from VAE_train.youtube_train_vae import YOUTUBE_get_text_data
 from lstm_vae import inference
+from preprocessing.pre_processing import preProcessing
 
 sequencer = TextsToSequences(num_words=35000)
 padder = Padder(140)
@@ -574,7 +576,7 @@ if __name__ == "__main__":
     mode = "DIVERSITY"  # DIVERSITY OR DISTANCE
 
     # For how many sentences we want to run X-SPELLS
-    no_of_sentences = 1
+    no_of_sentences = 100
     latent_dim = 500
     nbr_features = latent_dim
 
@@ -587,6 +589,17 @@ if __name__ == "__main__":
 
     max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
+
+    X_train_subsplit, X_test_subsplit, y_train_subsplit, y_test_subsplit = \
+        train_test_split(X_original, y_original, random_state=42, stratify=y_original, test_size=0.25)
+
+    X_original = X_test_subsplit
+    y_original = y_test_subsplit
+    X_original_processed = preProcessing(X_test_subsplit)
+
+    print(X_original)
+    print(X_original_processed)
+
     input_dim = encoder_input_data.shape[-1]
 
     vae, enc, gen, stepper = load_VAE(dataset_name)
