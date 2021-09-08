@@ -32,12 +32,12 @@ def get_text_data(num_samples, dataset):
     lines = []
 
     if dataset == "polarity":
-        df = pd.read_csv('../data/' + dataset_name + '_tweets.csv', encoding='utf-8')
+        df = pd.read_csv(os.path.join(__location__, '../data/polarity_tweets.csv'), encoding='utf-8')
         X = df['tweet'].values
         y = df['class'].values
 
     elif dataset == "hate":
-        df = pd.read_csv('../data/' + dataset_name + '_tweets.csv', encoding='utf-8')
+        df = pd.read_csv(os.path.join(__location__, '../data/hate_tweets.csv'), encoding='utf-8')
         # Removing the offensive comments, keeping only neutral and hatespeech,
         # and convert the class value from 2 to 1 for simplification purposes
         df = df[df['class'] != 1]

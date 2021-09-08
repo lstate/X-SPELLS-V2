@@ -10,9 +10,11 @@ import pickle
 import sys
 
 import numpy as np
+from keras.callbacks import EarlyStopping
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import make_pipeline
+from sklearn.utils import class_weight
 
 from DNN_base import TextsToSequences, Padder, create_model
 from lime.lime_text import LimeTextExplainer
@@ -79,7 +81,15 @@ class_names = ['no spam', 'spam']
 
 sequencer = TextsToSequences(num_words=35000)
 padder = Padder(140)
-myModel = KerasClassifier(build_fn=create_model, epochs=100)
+
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=2)
+class_weight = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+
+myModel = KerasClassifier(build_fn=create_model,
+                          epochs=100,
+                          validation_split=0.3,
+                          class_weight=class_weight,
+                          callbacks=[es])
 
 pipeline = make_pipeline(sequencer, padder, myModel)
 pipeline.fit(X_train, y_train)

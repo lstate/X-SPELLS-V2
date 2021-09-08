@@ -563,9 +563,9 @@ def create_explanations_csv():
 if __name__ == "__main__":
     # Initialize stuff
     # Insert 'hate' or 'polarity' as dataset
-    dataset_name = "liar"
+    dataset_name = "polarity"
     # Insert 'RF' or 'DNN' as black box model
-    model_name = "DNN"
+    model_name = "RF"
     pickled_black_box_filename = 'models/' + dataset_name + '_saved_' + model_name + '_model.sav'
 
     if model_name == "RF":
@@ -577,7 +577,7 @@ if __name__ == "__main__":
     mode = "DIVERSITY"  # DIVERSITY OR DISTANCE
 
     # For how many sentences we want to run X-SPELLS
-    no_of_sentences = 100
+    no_of_sentences = 80
     latent_dim = 500
     nbr_features = latent_dim
 
@@ -611,15 +611,13 @@ if __name__ == "__main__":
 
     input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts]
 
-    print(len(most_common_words))
-
     for i, input_text_cleand in enumerate(input_texts_cleaned):
 
         for t, char in enumerate(input_text_cleand):
             encoder_input_data[i, t, char2id[char]] = 1.0
 
     vae, enc, gen, stepper = load_VAE(dataset_name)
-    calculate_MRE()
+    # calculate_MRE()
 
     in_sentences, latent_space_state, decoded_sentences = get_sentences()
     smallest_x, largest_x = calculate_min_max(np.array(latent_space_state))
@@ -638,7 +636,7 @@ if __name__ == "__main__":
     idx, fidelities, bbpreds, dtpreds, exemplars, counter_exemplars, top_exemplar_words, top_counter_exemplar_words, \
     top_exemplar_words_dict_list, top_counter_exemplar_words_dict_list = ([] for i in range(10))
 
-    for i in range(len(predictions)):
+    for i in range(70, len(predictions)):
         print(i)
         y = list()
 
