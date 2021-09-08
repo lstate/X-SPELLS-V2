@@ -222,7 +222,7 @@ if __name__ == "__main__":
     dataset_name = 'liar'
     res = get_text_data(num_samples=20000, dataset=dataset_name)
 
-    max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
+    max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
 
     print(encoder_input_data.shape, "Creating model...")
