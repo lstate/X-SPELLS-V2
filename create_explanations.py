@@ -149,7 +149,7 @@ def calculate_MRE():
     train_input_sentences = []
     train_decoded_sentences = []
 
-    for i in range(int(len(encoder_input_data))):
+    for i in range(int(len(X_original_processed))):
         print(i)
         mean, variance = enc.predict([[encoder_input_data[i]]])
         seq = np.random.normal(size=(latent_dim,))
