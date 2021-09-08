@@ -147,7 +147,7 @@ def get_text_data(num_samples, dataset):
     print(lines)
 
     for item in lines:
-        if len(item) > 300:
+        if len(item) > 400:
             lines.remove(item)
 
     for line in lines[: min(num_samples, len(lines) - 1)]:
@@ -209,8 +209,9 @@ def get_text_data(num_samples, dataset):
         print(input_texts_cleaned[i])
         print('')
 
-    return max_encoder_seq_length, num_encoder_tokens, final_input_words, input_token_index, reverse_input_char_index, \
-           encoder_input_data, decoder_input_data, input_texts_original, X_test, y_test, new_X_test
+    return max_encoder_seq_length, num_encoder_tokens, input_texts_cleaned, final_input_words, \
+           input_token_index, reverse_input_char_index, encoder_input_data, decoder_input_data, \
+           input_texts_original, X_test, y_test, new_X_test
 
 
 def decode(s):

@@ -10,6 +10,7 @@ import sklearn
 from imblearn.over_sampling import SMOTE
 from keras.models import load_model
 from keras.wrappers.scikit_learn import KerasClassifier
+from nltk import word_tokenize
 from nltk.corpus import stopwords
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
@@ -132,7 +133,7 @@ def get_sentences():
     state_input_sentences = []
     decoded_sentences = []
 
-    for i in range(len(encoder_input_data)):
+    for i in range(len(X_original_processed)):
         mean, variance = enc.predict([[encoder_input_data[i]]])
         seq = np.random.normal(size=(latent_dim,))
         seq = mean + variance * seq
@@ -587,19 +588,38 @@ if __name__ == "__main__":
     else:
         res = get_text_data(num_samples=20000, dataset=dataset_name)
 
-    max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
+    max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, most_common_words, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
 
     X_train_subsplit, X_test_subsplit, y_train_subsplit, y_test_subsplit = \
         train_test_split(X_original, y_original, random_state=42, stratify=y_original, test_size=0.25)
+    input_dim = encoder_input_data.shape[-1]
 
     X_original = X_test_subsplit
     y_original = y_test_subsplit
-    X_original_processed = preProcessing(X_test_subsplit)
-    input_dim = encoder_input_data.shape[-1]
+    X_original_processed = preProcessing(X_original)
+
+    encoder_input_data = np.zeros((len(input_texts_cleaned), max_encoder_seq_length, num_enc_tokens),
+                                  dtype="float32")
+
+    input_texts = list()
+    for line in X_original_processed:
+        input_text = line
+        input_text = word_tokenize(input_text)
+        input_text.append("<end>")
+        input_texts.append(input_text)
+
+    input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts]
+
+    print(len(most_common_words))
+
+    for i, input_text_cleand in enumerate(input_texts_cleaned):
+
+        for t, char in enumerate(input_text_cleand):
+            encoder_input_data[i, t, char2id[char]] = 1.0
 
     vae, enc, gen, stepper = load_VAE(dataset_name)
-    # calculate_MRE()
+    calculate_MRE()
 
     in_sentences, latent_space_state, decoded_sentences = get_sentences()
     smallest_x, largest_x = calculate_min_max(np.array(latent_space_state))
