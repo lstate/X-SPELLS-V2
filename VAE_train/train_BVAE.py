@@ -225,6 +225,7 @@ if __name__ == "__main__":
     max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
 
+    print()
     print(encoder_input_data.shape, "Creating model...")
 
     input_dim = encoder_input_data.shape[-1]
