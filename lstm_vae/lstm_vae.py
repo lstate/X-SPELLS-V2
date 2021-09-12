@@ -84,14 +84,14 @@ def create_lstm_vae(input_dim,
         kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
         loss = xent_loss + kl_loss
         return loss
-        
+
     # L: subsequent functions are added to be able to read out the different parts of the error
     def xent_loss(x, x_decoded_onehot):
-    	return objectives.categorical_crossentropy(x, x_decoded_onehot)
-    	
+        return objectives.categorical_crossentropy(x, x_decoded_onehot)
+
     def kl_loss(x, x_decoded_onehot):
         return - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
-    
+
     # L: changed to account for the above function
     vae.compile(optimizer="adam", loss=vae_loss, metrics=[xent_loss, kl_loss])
     vae.summary()

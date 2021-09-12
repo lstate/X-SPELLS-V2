@@ -11580,40 +11580,40 @@ var lime =
 	    /*------------------------------------------------------------------------*/
 	
 	    /**
-	     * Creates a `lodash` object which wraps `value` to enable implicit method
-	     * chain sequences. Methods that operate on and return arrays, collections,
-	     * and functions can be chained together. Methods that retrieve a single value
-	     * or may return a primitive value will automatically end the chain sequence
-	     * and return the unwrapped value. Otherwise, the value must be unwrapped
-	     * with `_#value`.
-	     *
-	     * Explicit chain sequences, which must be unwrapped with `_#value`, may be
-	     * enabled using `_.chain`.
-	     *
-	     * The execution of chained methods is lazy, that is, it's deferred until
-	     * `_#value` is implicitly or explicitly called.
-	     *
-	     * Lazy evaluation allows several methods to support shortcut fusion.
-	     * Shortcut fusion is an optimization to merge iteratee calls; this avoids
-	     * the creation of intermediate arrays and can greatly reduce the number of
-	     * iteratee executions. Sections of a chain sequence qualify for shortcut
-	     * fusion if the section is applied to an array and iteratees accept only
-	     * one argument. The heuristic for whether a section qualifies for shortcut
-	     * fusion is subject to change.
-	     *
-	     * Chaining is supported in custom builds as long as the `_#value` method is
-	     * directly or indirectly included in the build.
-	     *
-	     * In addition to lodash methods, wrappers have `Array` and `String` methods.
-	     *
-	     * The wrapper `Array` methods are:
-	     * `concat`, `join`, `pop`, `push`, `shift`, `sort`, `splice`, and `unshift`
-	     *
-	     * The wrapper `String` methods are:
-	     * `replace` and `split`
-	     *
-	     * The wrapper methods that support shortcut fusion are:
-	     * `at`, `compact`, `drop`, `dropRight`, `dropWhile`, `filter`, `find`,
+         * Creates a `lodash` object which wraps `value` to enable implicit method
+         * chain sequences. Methods that operate on and return arrays, collections,
+         * and functions can be chained together. Methods that retrieve a single value
+         * or may return a primitive value will automatically end the chain sequence
+         * and return the unwrapped value. Otherwise, the value must be unwrapped
+         * with `_#value`.
+         *
+         * Explicit chain sequences, which must be unwrapped with `_#value`, may be
+         * enabled using `_.chain`.
+         *
+         * The execution of chained methods is lazy, that is, it's deferred until
+         * `_#value` is implicitly or explicitly called.
+         *
+         * Lazy experiments allows several methods to support shortcut fusion.
+         * Shortcut fusion is an optimization to merge iteratee calls; this avoids
+         * the creation of intermediate arrays and can greatly reduce the number of
+         * iteratee executions. Sections of a chain sequence qualify for shortcut
+         * fusion if the section is applied to an array and iteratees accept only
+         * one argument. The heuristic for whether a section qualifies for shortcut
+         * fusion is subject to change.
+         *
+         * Chaining is supported in custom builds as long as the `_#value` method is
+         * directly or indirectly included in the build.
+         *
+         * In addition to lodash methods, wrappers have `Array` and `String` methods.
+         *
+         * The wrapper `Array` methods are:
+         * `concat`, `join`, `pop`, `push`, `shift`, `sort`, `splice`, and `unshift`
+         *
+         * The wrapper `String` methods are:
+         * `replace` and `split`
+         *
+         * The wrapper methods that support shortcut fusion are:
+         * `at`, `compact`, `drop`, `dropRight`, `dropWhile`, `filter`, `find`,
 	     * `findLast`, `head`, `initial`, `last`, `map`, `reject`, `reverse`, `slice`,
 	     * `tail`, `take`, `takeRight`, `takeRightWhile`, `takeWhile`, and `toArray`
 	     *
@@ -11815,33 +11815,33 @@ var lime =
 	         */
 	        '_': lodash
 	      }
-	    };
-	
-	    // Ensure wrappers are instances of `baseLodash`.
-	    lodash.prototype = baseLodash.prototype;
-	    lodash.prototype.constructor = lodash;
-	
-	    LodashWrapper.prototype = baseCreate(baseLodash.prototype);
-	    LodashWrapper.prototype.constructor = LodashWrapper;
-	
-	    /*------------------------------------------------------------------------*/
-	
-	    /**
-	     * Creates a lazy wrapper object which wraps `value` to enable lazy evaluation.
-	     *
-	     * @private
-	     * @constructor
-	     * @param {*} value The value to wrap.
-	     */
-	    function LazyWrapper(value) {
-	      this.__wrapped__ = value;
-	      this.__actions__ = [];
-	      this.__dir__ = 1;
-	      this.__filtered__ = false;
-	      this.__iteratees__ = [];
-	      this.__takeCount__ = MAX_ARRAY_LENGTH;
-	      this.__views__ = [];
-	    }
+        };
+
+          // Ensure wrappers are instances of `baseLodash`.
+          lodash.prototype = baseLodash.prototype;
+          lodash.prototype.constructor = lodash;
+
+          LodashWrapper.prototype = baseCreate(baseLodash.prototype);
+          LodashWrapper.prototype.constructor = LodashWrapper;
+
+          /*------------------------------------------------------------------------*/
+
+          /**
+           * Creates a lazy wrapper object which wraps `value` to enable lazy experiments.
+           *
+           * @private
+           * @constructor
+           * @param {*} value The value to wrap.
+           */
+          function LazyWrapper(value) {
+              this.__wrapped__ = value;
+              this.__actions__ = [];
+              this.__dir__ = 1;
+              this.__filtered__ = false;
+              this.__iteratees__ = [];
+              this.__takeCount__ = MAX_ARRAY_LENGTH;
+              this.__views__ = [];
+          }
 	
 	    /**
 	     * Creates a clone of the lazy wrapper object.
@@ -27325,22 +27325,22 @@ var lime =
 	      _didIteratorError2 = true;
 	      _iteratorError2 = err;
 	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	          _iterator2.return();
-	        }
-	      } finally {
-	        if (_didIteratorError2) {
-	          throw _iteratorError2;
-	        }
-	      }
-	    }
-	
-	    ;
-	    ret_names.push("Other");
-	    ret_probs.push(other_prob);
-	    return [ret_names, ret_probs];
-	  };
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
+        }
+
+
+          ret_names.push("Other");
+          ret_probs.push(other_prob);
+          return [ret_names, ret_probs];
+      };
 	
 	  return PredictProba;
 	}();

@@ -1,7 +1,7 @@
 """
 Trains the VAE model and saves it inside models for later use
 """
-
+import os
 import string
 import sys
 from collections import Counter
@@ -16,9 +16,12 @@ sys.path.insert(0, '..')
 from lstm_vae import create_lstm_vae, inference
 from preprocessing.pre_processing import preProcessing
 
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-def get_text_data(num_samples, data_path, dataset):
-    thousandwords = [line.rstrip('\n') for line in open('../data/1-1000.txt')]
+
+def get_text_data(num_samples, dataset):
+    thousandwords = [line.rstrip('\n') for line in open(os.path.join(__location__, '../data/1-1000.txt'))]
 
     print('thousandwords', thousandwords)
     # vectorize the data
@@ -27,28 +30,125 @@ def get_text_data(num_samples, data_path, dataset):
     input_words = set(["\t"])
     all_input_words = []
     lines = []
-    df = pd.read_csv(data_path, encoding='utf-8')
 
     if dataset == "polarity":
+        df = pd.read_csv(os.path.join(__location__, '../data/polarity_tweets.csv'), encoding='utf-8')
         X = df['tweet'].values
         y = df['class'].values
+
     elif dataset == "hate":
+        df = pd.read_csv(os.path.join(__location__, '../data/hate_tweets.csv'), encoding='utf-8')
         # Removing the offensive comments, keeping only neutral and hatespeech,
         # and convert the class value from 2 to 1 for simplification purposes
         df = df[df['class'] != 1]
         X = df['tweet'].values
         y = df['class'].apply(lambda x: 1 if x == 2 else 0).values
 
+    elif dataset == "liar":
+        df_train = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/train.tsv"), encoding='utf-8', sep='\t')
+        df_test = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/test.tsv"), encoding='utf-8', sep='\t')
+        df_val = pd.read_csv(os.path.join(__location__, "../data/liar_dataset/valid.tsv"), encoding='utf-8', sep='\t')
+
+        mapping = {'pants-fire': 0,
+                   'false': 0,
+                   'barely-true': 0,
+                   'half-true': 1,
+                   'mostly-true': 1,
+                   'true': 1}
+
+        df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(lambda x: mapping[x])
+        df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(lambda x: mapping[x])
+        df_val.iloc[:, 1] = df_val.iloc[:, 1].apply(lambda x: mapping[x])
+
+        # Removing middle columns
+        df_train = df_train[df_train.iloc[:, 1] != 2]
+        df_test = df_test[df_test.iloc[:, 1] != 2]
+        df_val = df_val[df_val.iloc[:, 1] != 2]
+
+        X_train = df_train.iloc[:, 2].values
+        y_train = df_train.iloc[:, 1].values
+        X_test = df_test.iloc[:, 2].values
+        y_test = df_test.iloc[:, 1].values
+        X_val = df_val.iloc[:, 2].values
+        y_val = df_val.iloc[:, 1].values
+
+        Xtt = np.append(X_train, X_test)
+        ytt = np.append(y_train, y_test)
+        X = np.append(Xtt, X_val)
+        y = np.append(ytt, y_val)
+
+    elif dataset == 'question':
+        df_train = pd.read_csv((os.path.join(__location__, "../data/question_dataset/question_train.txt")),
+                               encoding='ISO-8859-1', sep=':',
+                               error_bad_lines=False, header=None)
+        df_test = pd.read_csv((os.path.join(__location__, "../data/question_dataset/question_test.txt")),
+                              encoding='ISO-8859-1', sep=':',
+                              error_bad_lines=False, header=None)
+
+        def remove_first_word(string):
+            return string.partition(' ')[2]
+
+        df_train.iloc[:, 1] = df_train.iloc[:, 1].apply(remove_first_word)
+        df_test.iloc[:, 1] = df_test.iloc[:, 1].apply(remove_first_word)
+
+        X_train = df_train.iloc[:, 1].values
+        y_train = df_train.iloc[:, 0].values
+        X_test = df_test.iloc[:, 1].values
+        y_test = df_test.iloc[:, 0].values
+
+        X_train = preProcessing(X_train)
+        X_test = preProcessing(X_test)
+
+        X = np.append(X_train, X_test)
+        y = np.append(y_train, y_test)
+
+        (unique, counts) = np.unique(y, return_counts=True)
+        frequencies = np.asarray((unique, counts)).T
+
+        print(frequencies)
+        print(len(y))
+        print(len(X))
+
+        # Which class to define as 0 depends on the distribution of data.
+        # We pick the class with the largest number of instances.
+        mapping = {'DESC': 1,
+                   'ENTY': 0,
+                   'ABBR': 1,
+                   'HUM': 1,
+                   'NUM': 1,
+                   'LOC': 1}
+
+        df_train.iloc[:, 0] = df_train.iloc[:, 0].apply(lambda x: mapping[x])
+        df_test.iloc[:, 0] = df_test.iloc[:, 0].apply(lambda x: mapping[x])
+
+        X_train = df_train.iloc[:, 1].values
+        y_train = df_train.iloc[:, 0].values
+        X_test = df_test.iloc[:, 1].values
+        y_test = df_test.iloc[:, 0].values
+
+        X_train = preProcessing(X_train)
+        X_test = preProcessing(X_test)
+
+        X = np.append(X_train, X_test)
+        y = np.append(y_train, y_test)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
     # we use "best possible case" only i.e. only test data
     new_X_test = preProcessing(X_test)
 
+    print(len(X_test))
+
     for line in new_X_test:
         input_texts_original.append(line)
         lines.append(
             line.lower().translate(str.maketrans('', '', string.punctuation)))  # lowercase and remove punctuation
+
     print(lines)
+
+    for item in lines:
+        if len(item) > 400:
+            lines.remove(item)
 
     for line in lines[: min(num_samples, len(lines) - 1)]:
         input_text = line
@@ -76,13 +176,13 @@ def get_text_data(num_samples, data_path, dataset):
 
     input_texts_cleaned = [[word for word in text if word in most_common_words] for text in input_texts]
 
+    print(len(input_texts_cleaned))
+
     final_input_words = sorted(list(set(most_common_words)))
     num_encoder_tokens = len(final_input_words)
     max_encoder_seq_length = max([len(txt) for txt in input_texts_cleaned]) + 1
 
-    print("input_texts_cleaned", input_texts_cleaned)
-    print(most_common_words)
-    print(final_input_words)
+    print(len(input_texts_cleaned))
 
     print("Number of samples:", len(input_texts_cleaned))
     print("Number of unique input tokens:", num_encoder_tokens)
@@ -109,8 +209,9 @@ def get_text_data(num_samples, data_path, dataset):
         print(input_texts_cleaned[i])
         print('')
 
-    return max_encoder_seq_length, num_encoder_tokens, final_input_words, input_token_index, reverse_input_char_index, \
-           encoder_input_data, decoder_input_data, input_texts_original, X_test, y_test, new_X_test
+    return max_encoder_seq_length, num_encoder_tokens, input_texts_cleaned, final_input_words, \
+           input_token_index, reverse_input_char_index, encoder_input_data, decoder_input_data, \
+           input_texts_original, X_test, y_test, new_X_test
 
 
 def decode(s):
@@ -118,19 +219,28 @@ def decode(s):
 
 
 if __name__ == "__main__":
-    dataset_name = 'polarity'
-    res = get_text_data(num_samples=20000, data_path='../data/' + dataset_name + '_tweets.csv', dataset=dataset_name)
+    dataset_name = 'liar'
+    res = get_text_data(num_samples=20000, dataset=dataset_name)
 
-    max_encoder_seq_length, num_enc_tokens, characters, char2id, id2char, \
+    max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, characters, char2id, id2char, \
     encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
 
+    print()
     print(encoder_input_data.shape, "Creating model...")
 
     input_dim = encoder_input_data.shape[-1]
     batch_size = 1
     latent_dim = 500
     intermediate_dim = 256
-    epochs = 100
+
+    if dataset_name == 'hate':
+        epochs = 200
+    elif dataset_name == 'polarity':
+        epochs = 250
+    elif dataset_name == 'liar':
+        epochs = 300
+    elif dataset_name == 'question':
+        epochs = 200
 
     vae, enc, gen, stepper, vae_loss = create_lstm_vae(input_dim,
                                                        batch_size=batch_size,

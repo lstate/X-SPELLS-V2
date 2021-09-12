@@ -5,11 +5,10 @@ Handles the pre-processing used across various other scripts
 import re
 import string
 
+import nltk
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
-import numpy as np
-import nltk
 
 
 def cleanText(var):
@@ -108,7 +107,7 @@ def get_text_data(data_path, dataset):
     #elif dataset == "youtube":
     #    X = df["CONTENT"].values
     #    y = df["CLASS"].values
-        
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
     
     new_X_train = preProcessing(X_train)
