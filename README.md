@@ -25,9 +25,12 @@ To get the code running, proceed as follows:
 
 1) Downloand code and one pretrained model 
 2) Pull the docker container of the project
-3) Link the container to the optimus code/models
+3) Link the container to the code/models provided by OPTIMUS
 
-Scripts and more details on how to get the models running are provided on the website. Some adaptation is necessary, e.g. to set data paths in the scripts accordingly or to insert code lines on generating examples in the latent space (no conceptual changes).
+Scripts and more details on how to get the models running are provided on the website. Some adaptation is necessary, e.g. to set data paths in the scripts accordingly or to insert code lines on generating examples in the latent space (no conceptual changes). Specifically, the following scripts are needed:
+
+- A script to fine-tune the model, as provided on the OPTIMUS webpage, and the corresponding sh script. 
+- A script to manipulate the latent space, as provided on the OPTIMUS webpage, and the corresponding sh script. This python scripts needs to be augmented by the generate_sentences function from our create_explanations.py file, in order to create the necessary set of sentences in the latent space.
 
 ## Instructions
 
