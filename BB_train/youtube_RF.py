@@ -79,7 +79,7 @@ class_names = ['no spam', 'spam']
 # We'll use the TF-IDF vectorizer, commonly used for text.
 vectorizer = TfidfVectorizer(sublinear_tf='false')
 train_vectors = vectorizer.fit_transform(X_train)
-pickle.dump(vectorizer, open("../models/youtube_tfidf_vectorizer_redone.pickle", "wb"))
+pickle.dump(vectorizer, open("../models/youtube_tfidf_vectorizer.pickle", "wb"))
 
 #vectorizer = pickle.load(open("models/youtube_tfidf_vectorizer.pickle", 'rb'))
 
@@ -128,7 +128,7 @@ rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid
 rf.fit(train_vectors, y_train)
 
 # save the model to disk
-filename = '../models/youtube_saved_RF_model_redone.sav'
+filename = '../models/youtube_saved_RF_model.sav'
 pickle.dump(rf, open(filename, 'wb'))
 
 # load the model from disk

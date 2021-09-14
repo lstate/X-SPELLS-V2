@@ -102,13 +102,6 @@ def get_text_data(num_samples, dataset):
         X = np.append(X_train, X_test)
         y = np.append(y_train, y_test)
 
-        (unique, counts) = np.unique(y, return_counts=True)
-        frequencies = np.asarray((unique, counts)).T
-
-        print(frequencies)
-        print(len(y))
-        print(len(X))
-
         # Which class to define as 0 depends on the distribution of data.
         # We pick the class with the largest number of instances.
         mapping = {'DESC': 1,
@@ -219,7 +212,7 @@ def decode(s):
 
 
 if __name__ == "__main__":
-    dataset_name = 'liar'
+    dataset_name = 'question'
     res = get_text_data(num_samples=20000, dataset=dataset_name)
 
     max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, characters, char2id, id2char, \
@@ -229,6 +222,7 @@ if __name__ == "__main__":
     print(encoder_input_data.shape, "Creating model...")
 
     input_dim = encoder_input_data.shape[-1]
+    print(input_dim)
     batch_size = 1
     latent_dim = 500
     intermediate_dim = 256
@@ -238,7 +232,7 @@ if __name__ == "__main__":
     elif dataset_name == 'polarity':
         epochs = 250
     elif dataset_name == 'liar':
-        epochs = 300
+        epochs = 250
     elif dataset_name == 'question':
         epochs = 200
 

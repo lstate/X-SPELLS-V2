@@ -128,12 +128,12 @@ def decode(s):
     return inference.decode_sequence(s, gen, stepper, input_dim, char2id, id2char, max_encoder_seq_length)
 
 
-def get_sentences():
+def get_sentences(input_data_size):
     input_sentences = []
     state_input_sentences = []
     decoded_sentences = []
 
-    for i in range(len(X_original_processed)):
+    for i in range(input_data_size):
         mean, variance = enc.predict([[encoder_input_data[i]]])
         seq = np.random.normal(size=(latent_dim,))
         seq = mean + variance * seq
@@ -547,7 +547,7 @@ def create_explanations_csv():
     Creates csv with final explanations along with other results from X-SPELLS run
     :return:
     """
-    with open('output/' + dataset_name + '_' + model_name + '.csv', mode='w', newline='') as file:
+    with open('output/' + dataset_name + '_' + model_name + '.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(
             ["index", "original text", "true class", "decoded text", "black box prediction",
@@ -562,10 +562,10 @@ def create_explanations_csv():
 
 if __name__ == "__main__":
     # Initialize stuff
-    # Insert 'hate' or 'polarity' as dataset
-    dataset_name = "polarity"
+    # Insert 'hate' or 'polarity' or 'youtube' or 'liar' or 'question' as dataset
+    dataset_name = "youtube"
     # Insert 'RF' or 'DNN' as black box model
-    model_name = "RF"
+    model_name = "DNN"
     pickled_black_box_filename = 'models/' + dataset_name + '_saved_' + model_name + '_model.sav'
 
     if model_name == "RF":
@@ -577,7 +577,7 @@ if __name__ == "__main__":
     mode = "DIVERSITY"  # DIVERSITY OR DISTANCE
 
     # For how many sentences we want to run X-SPELLS
-    no_of_sentences = 80
+    no_of_sentences = 100
     latent_dim = 500
     nbr_features = latent_dim
 
@@ -585,15 +585,25 @@ if __name__ == "__main__":
         res = YOUTUBE_get_text_data(num_samples=20000,
                                     data_path='data/YouTube-Spam-Collection-v1/' + dataset_name + '.csv',
                                     dataset=dataset_name)
+
+        max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, most_common_words, char2id, id2char, \
+        encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed, = res
+
     else:
         res = get_text_data(num_samples=20000, dataset=dataset_name)
 
-    max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, most_common_words, char2id, id2char, \
-    encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
+        max_encoder_seq_length, num_enc_tokens, input_texts_cleaned, most_common_words, char2id, id2char, \
+        encoder_input_data, decoder_input_data, input_texts_original, X_original, y_original, X_original_processed = res
+
+    input_dim = encoder_input_data.shape[-1]
+
+    i = 0
+    for text in X_original_processed:
+        print(str(i) + " : " + text)
+        i += 1
 
     X_train_subsplit, X_test_subsplit, y_train_subsplit, y_test_subsplit = \
-        train_test_split(X_original, y_original, random_state=42, stratify=y_original, test_size=0.25)
-    input_dim = encoder_input_data.shape[-1]
+        train_test_split(X_original_processed, y_original, random_state=42, stratify=y_original, test_size=0.25)
 
     X_original = X_test_subsplit
     y_original = y_test_subsplit
@@ -603,6 +613,7 @@ if __name__ == "__main__":
                                   dtype="float32")
 
     input_texts = list()
+
     for line in X_original_processed:
         input_text = line
         input_text = word_tokenize(input_text)
@@ -617,17 +628,20 @@ if __name__ == "__main__":
             encoder_input_data[i, t, char2id[char]] = 1.0
 
     vae, enc, gen, stepper = load_VAE(dataset_name)
-    # calculate_MRE()
+    calculate_MRE()
 
-    in_sentences, latent_space_state, decoded_sentences = get_sentences()
+    in_sentences, latent_space_state, decoded_sentences = get_sentences(no_of_sentences)
+    print(in_sentences)
+
     smallest_x, largest_x = calculate_min_max(np.array(latent_space_state))
 
     generated_state_sentences, generated_decoded_sentences = generate_sentences(number_of_sentences=no_of_sentences,
-                                                                                number_of_max_attempts=5000,
+                                                                                number_of_max_attempts=6000,
                                                                                 number_of_random_sentences=200,
                                                                                 probability=0.4)
 
     print(pickled_black_box_filename)
+
     predictions, final_state_sentences, final_decoded_sentences = get_predictions(pickled_black_box_filename,
                                                                                   pickled_vectorizer_filename,
                                                                                   no_of_sentences)
@@ -636,174 +650,179 @@ if __name__ == "__main__":
     idx, fidelities, bbpreds, dtpreds, exemplars, counter_exemplars, top_exemplar_words, top_counter_exemplar_words, \
     top_exemplar_words_dict_list, top_counter_exemplar_words_dict_list = ([] for i in range(10))
 
-    for i in range(70, len(predictions)):
-        print(i)
-        y = list()
+    for i in range(len(predictions)):
+        try:
+            print(i)
+            y = list()
 
-        if len(final_decoded_sentences[i]) < 40:
-            print(len(final_decoded_sentences[i]))
-            print('Not enough random sentences.')
-            continue
+            if len(final_decoded_sentences[i]) < 30:
+                print(len(final_decoded_sentences[i]))
+                print('Not enough random sentences.')
+                continue
 
-        class_imbalance = False
+            class_imbalance = False
 
-        Z = np.array(final_state_sentences[i]).squeeze()  # convert from 3d to 2d
+            Z = np.array(final_state_sentences[i]).squeeze()  # convert from 3d to 2d
 
-        Z_text = final_decoded_sentences[i]
-        Yb = np.array(predictions[i])
-        Z, Z_text, Yb = find_closest_k_latent_sentences(Z, Z_text, Yb, 100)
-        Z = np.array(Z)
-        Yb = np.array(Yb)
+            Z_text = final_decoded_sentences[i]
+            Yb = np.array(predictions[i])
+            Z, Z_text, Yb = find_closest_k_latent_sentences(Z, Z_text, Yb, 100)
+            Z = np.array(Z)
+            Yb = np.array(Yb)
 
-        exemplars_holder = list()
-        counter_exemplars_holder = list()
+            exemplars_holder = list()
+            counter_exemplars_holder = list()
 
-        Y_0 = (np.count_nonzero(Yb == 0))
-        Y_1 = (np.count_nonzero(Yb == 1))
+            Y_0 = (np.count_nonzero(Yb == 0))
+            Y_1 = (np.count_nonzero(Yb == 1))
 
-        # Define as having an imbalance problem when either one of two classes has less than 40% of the total examples
-        if Y_0 / (Y_0 + Y_1) < 0.4 or Y_1 / (Y_0 + Y_1) < 0.4:
-            class_imbalance = True
+            # Define as having an imbalance problem when either one of two classes has less than 40% of the total examples
+            if Y_0 / (Y_0 + Y_1) < 0.4 or Y_1 / (Y_0 + Y_1) < 0.4:
+                class_imbalance = True
 
-        # Catch SMOTE error
-        if Y_0 < 6 or Y_1 < 6:
-            print('Not enough samples for smote.')
-            continue
+            # Catch SMOTE error
+            if Y_0 < 6 or Y_1 < 6:
+                print('Not enough samples for smote.')
+                continue
 
-        # If we have class imbalance, apply SMOTE
-        if class_imbalance:
-            sm = SMOTE(random_state=42)
-            Z, Yb = sm.fit_resample(Z, Yb)
+            # If we have class imbalance, apply SMOTE
+            if class_imbalance:
+                sm = SMOTE(random_state=42)
+                Z, Yb = sm.fit_resample(Z, Yb)
 
-        for t in range(len(Z)):
-            y.append(np.expand_dims(Z[t], axis=0))  # convert from 2d to 3d
+            for t in range(len(Z)):
+                y.append(np.expand_dims(Z[t], axis=0))  # convert from 2d to 3d
 
-        for t in range(len(Z_text), len(Z)):
-            Z_text.append(decode(y[t]))
+            for t in range(len(Z_text), len(Z)):
+                Z_text.append(decode(y[t]))
 
-        # Selecting a percentage to test fidelity on the dt
-        indices = np.random.permutation(len(Z))
-        Z_train_size = 0.95
-        Z_test_size = 0.05
+            # Selecting a percentage to test fidelity on the dt
+            indices = np.random.permutation(len(Z))
+            Z_train_size = 0.95
+            Z_test_size = 0.05
 
-        Z_train, Z_test = Z[indices[:int(len(Z) * Z_train_size)]], Z[indices[int(len(Z) * Z_train_size):]]
-        Yb_train, Yb_test = Yb[indices[:int(len(Z) * Z_train_size)]], Yb[indices[int(len(Z) * Z_train_size):]]
+            Z_train, Z_test = Z[indices[:int(len(Z) * Z_train_size)]], Z[indices[int(len(Z) * Z_train_size):]]
+            Yb_train, Yb_test = Yb[indices[:int(len(Z) * Z_train_size)]], Yb[indices[int(len(Z) * Z_train_size):]]
 
-        # Calculate weights
-        metric = 'euclidean'  # 'euclidean'
-        kernel_width = float(np.sqrt(nbr_features) * 0.75)
-        kernel = default_kernel
-        kernel = partial(kernel, kernel_width=kernel_width)
-        weights = calculate_weights(Z_train, metric)
+            # Calculate weights
+            metric = 'euclidean'  # 'euclidean'
+            kernel_width = float(np.sqrt(nbr_features) * 0.75)
+            kernel = default_kernel
+            kernel = partial(kernel, kernel_width=kernel_width)
+            weights = calculate_weights(Z_train, metric)
 
-        # Train latent decision tree
-        class_values = ['0', '1']
-        dt = decision_tree.learn_local_decision_tree(Z_train, Yb_train, weights, class_values, prune_tree=False)
-        Yc = dt.predict(Z)
-        print('Yc: ', Yc)
+            # Train latent decision tree
+            class_values = ['0', '1']
+            dt = decision_tree.learn_local_decision_tree(Z_train, Yb_train, weights, class_values, prune_tree=False)
+            Yc = dt.predict(Z)
+            print('Yc: ', Yc)
 
-        opposite_prediction_idx = list()
-        for t in range(len(Yc)):
-            # We want the opposite of the instance's prediction
-            if Yc[0] == 0:
-                opposite_prediction_idx = np.where(Yc == 1)[0]
-            else:
-                opposite_prediction_idx = np.where(Yc == 0)[0]
-
-        print('opposite_prediction_idx: ', opposite_prediction_idx)
-
-        nbr_exemplars = 5
-        if mode == "DIVERSITY":
-            counter_exemplar_idxs, function_value = DIVERSITY_find_counter_exemplars(latent_space_state[i], Z,
-                                                                                     opposite_prediction_idx,
-                                                                                     metric='cosine',
-                                                                                     count=nbr_exemplars)
-            # print(function_value)
-            print("final goal value (DIVERSITY)", function_value[len(function_value) - 1])
-            function_value = function_value[len(function_value) - 1]
-        if mode == "DISTANCE":
-            counter_exemplar_idxs = find_counter_exemplars(Z, opposite_prediction_idx, metric='cosine',
-                                                           count=nbr_exemplars)
-            function_value = EVAL_find_counter_exemplars(latent_space_state[i], Z, opposite_prediction_idx,
-                                                         counter_exemplar_idxs)
-            print("final goal value (DISTANCE)", function_value)
-
-        print(counter_exemplar_idxs)
-
-        leave_id = dt.apply(Z)
-        print('leave id: ', leave_id)
-        others_in_same_leaf = np.where(leave_id == leave_id[0])[0]
-        print('others in same leaf: ', others_in_same_leaf)
-        print('original sentence: ', Z_text[0])
-
-        if len(others_in_same_leaf) < nbr_exemplars:
-            print('Not enough exemplars in the leaf, will find by distance instead...', len(others_in_same_leaf))
-            same_prediction_idx = list()
-            for t in range(1, len(Yc)):
-                # We want the same as the instance's prediction
+            opposite_prediction_idx = list()
+            for t in range(len(Yc)):
+                # We want the opposite of the instance's prediction
                 if Yc[0] == 0:
-                    same_prediction_idx = np.where(Yc == 0)[0]
+                    opposite_prediction_idx = np.where(Yc == 1)[0]
                 else:
-                    same_prediction_idx = np.where(Yc == 1)[0]
+                    opposite_prediction_idx = np.where(Yc == 0)[0]
 
-            unique_exemplars = list(set(find_exemplars(Z, same_prediction_idx, metric='cosine')))
-            print(unique_exemplars)
-            selected_exemplars = unique_exemplars[:nbr_exemplars]
-        else:
-            selected_exemplars = np.random.choice(others_in_same_leaf, size=nbr_exemplars, replace=False)
+            print('opposite_prediction_idx: ', opposite_prediction_idx)
 
-        number_of_words = 5
-        print('exemplars:')
-        for j in selected_exemplars:
-            print(Z_text[j])
-            exemplars_holder.append(Z_text[j])
+            nbr_exemplars = 5
+            if mode == "DIVERSITY":
+                counter_exemplar_idxs, function_value = DIVERSITY_find_counter_exemplars(latent_space_state[i], Z,
+                                                                                         opposite_prediction_idx,
+                                                                                         metric='cosine',
+                                                                                         count=nbr_exemplars)
+                # print(function_value)
+                print("final goal value (DIVERSITY)", function_value[len(function_value) - 1])
+                function_value = function_value[len(function_value) - 1]
+            if mode == "DISTANCE":
+                counter_exemplar_idxs = find_counter_exemplars(Z, opposite_prediction_idx, metric='cosine',
+                                                               count=nbr_exemplars)
+                function_value = EVAL_find_counter_exemplars(latent_space_state[i], Z, opposite_prediction_idx,
+                                                             counter_exemplar_idxs)
+                print("final goal value (DISTANCE)", function_value)
 
-        np_exemplars_holder = np.array(exemplars_holder)
-        top_n_exemplar_words, top_n_exemplar_words_relative_count = \
-            find_most_common_words(np_exemplars_holder, number_of_words)
+            print(counter_exemplar_idxs)
 
-        print(top_n_exemplar_words)
-        print(top_n_exemplar_words_relative_count)
+            leave_id = dt.apply(Z)
+            print('leave id: ', leave_id)
+            others_in_same_leaf = np.where(leave_id == leave_id[0])[0]
+            print('others in same leaf: ', others_in_same_leaf)
+            print('original sentence: ', Z_text[0])
 
-        top_exemplar_words_dict = dict(zip(top_n_exemplar_words, top_n_exemplar_words_relative_count))
+            if len(others_in_same_leaf) < nbr_exemplars:
+                print('Not enough exemplars in the leaf, will find by distance instead...', len(others_in_same_leaf))
+                same_prediction_idx = list()
+                for t in range(1, len(Yc)):
+                    # We want the same as the instance's prediction
+                    if Yc[0] == 0:
+                        same_prediction_idx = np.where(Yc == 0)[0]
+                    else:
+                        same_prediction_idx = np.where(Yc == 1)[0]
 
-        print(top_exemplar_words_dict)
+                unique_exemplars = list(set(find_exemplars(Z, same_prediction_idx, metric='cosine')))
+                print(unique_exemplars)
+                selected_exemplars = unique_exemplars[:nbr_exemplars]
+            else:
+                selected_exemplars = np.random.choice(others_in_same_leaf, size=nbr_exemplars, replace=False)
 
-        print('counter exemplars:')
-        for j in counter_exemplar_idxs:
-            print(Z_text[j])
-            counter_exemplars_holder.append(Z_text[j])
+            number_of_words = 5
+            print('exemplars:')
+            for j in selected_exemplars:
+                print(Z_text[j])
+                exemplars_holder.append(Z_text[j])
 
-        np_counter_exemplars_holder = np.array(counter_exemplars_holder)
-        top_n_counter_exemplar_words, top_n_counter_exemplar_words_relative_count = \
-            find_most_common_words(np_counter_exemplars_holder, number_of_words)
+            np_exemplars_holder = np.array(exemplars_holder)
+            top_n_exemplar_words, top_n_exemplar_words_relative_count = \
+                find_most_common_words(np_exemplars_holder, number_of_words)
 
-        print(top_n_counter_exemplar_words)
-        print(top_n_counter_exemplar_words_relative_count)
+            print(top_n_exemplar_words)
+            print(top_n_exemplar_words_relative_count)
 
-        top_counter_exemplar_words_dict = dict(zip(top_n_counter_exemplar_words,
-                                                   top_n_counter_exemplar_words_relative_count))
+            top_exemplar_words_dict = dict(zip(top_n_exemplar_words, top_n_exemplar_words_relative_count))
 
-        print(top_counter_exemplar_words_dict)
-        print('original sentence', X_original[i])
-        print('true class', y_original[i])
-        print('black box prediction', Yb[0])
-        print('decision tree prediction', Yc[0])
+            print(top_exemplar_words_dict)
 
-        fidelity = accuracy_score(Yb, Yc)
-        print('fidelity', fidelity)
+            print('counter exemplars:')
+            for j in counter_exemplar_idxs:
+                print(Z_text[j])
+                counter_exemplars_holder.append(Z_text[j])
 
-        idx.append(i)
-        fidelities.append(fidelity)
-        bbpreds.append(Yb[0])
-        dtpreds.append(Yc[0])
-        exemplars.append(exemplars_holder)
-        counter_exemplars.append(counter_exemplars_holder)
-        top_exemplar_words.append(top_n_exemplar_words)
-        top_counter_exemplar_words.append(top_n_counter_exemplar_words)
-        top_exemplar_words_dict_list.append(top_exemplar_words_dict)
-        top_counter_exemplar_words_dict_list.append(top_counter_exemplar_words_dict)
-        print('')
+            np_counter_exemplars_holder = np.array(counter_exemplars_holder)
+            top_n_counter_exemplar_words, top_n_counter_exemplar_words_relative_count = \
+                find_most_common_words(np_counter_exemplars_holder, number_of_words)
 
-    pickle_dump_files()
-    create_explanations_csv()
+            print(top_n_counter_exemplar_words)
+            print(top_n_counter_exemplar_words_relative_count)
+
+            top_counter_exemplar_words_dict = dict(zip(top_n_counter_exemplar_words,
+                                                       top_n_counter_exemplar_words_relative_count))
+
+            print(top_counter_exemplar_words_dict)
+            print('original sentence', X_original[i])
+            print('true class', y_original[i])
+            print('black box prediction', Yb[0])
+            print('decision tree prediction', Yc[0])
+
+            fidelity = accuracy_score(Yb, Yc)
+            print('fidelity', fidelity)
+
+            idx.append(i)
+            fidelities.append(fidelity)
+            bbpreds.append(Yb[0])
+            dtpreds.append(Yc[0])
+            exemplars.append(exemplars_holder)
+            counter_exemplars.append(counter_exemplars_holder)
+            top_exemplar_words.append(top_n_exemplar_words)
+            top_counter_exemplar_words.append(top_n_counter_exemplar_words)
+            top_exemplar_words_dict_list.append(top_exemplar_words_dict)
+            top_counter_exemplar_words_dict_list.append(top_counter_exemplar_words_dict)
+            print('')
+
+        except ValueError:
+            print("Value Error")
+            continue
+
+        pickle_dump_files()
+        create_explanations_csv()

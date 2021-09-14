@@ -74,6 +74,19 @@ def get_jaccard_sim(str1, str2):
     return float(len(c)) / (len(a.union(b)))
 
 
+def create_lime_explanations(texts):
+    for text in texts:
+        print(text)
+        # print(y_original[i])
+        split_expression = lambda s: re.split(r'\W+', s)
+        explanation = explainer.explain_instance(text, c.predict_proba, num_features=5)
+        print('Probability =', c.predict_proba([text])[0, 1])
+        weights = OrderedDict(explanation.as_list())
+        print(list(weights.keys()))
+        lime_w = pd.DataFrame({'words': list(weights.keys()), 'weights': list(weights.values())})
+        print(lime_w)
+
+
 def create_lime_explanation_words():
     top_lime_words = list()
     for i in loaded_ids:
@@ -102,15 +115,15 @@ closest_k = 10  # How big the neighborhood should be in sentences
 
 if datasetName == "youtube":
     class_names = ['no spam', 'spam']
-    _, _, _, y, _, X = YOUTUBE_get_text_data('data/YouTube-Spam-Collection-v1/' + datasetName + '.csv', datasetName)
+    _, _, _, y, _, X = YOUTUBE_get_text_data('../data/YouTube-Spam-Collection-v1/' + datasetName + '.csv', datasetName)
 
 if datasetName == "polarity":
     class_names = ['negative', 'positive']
-    _, _, _, y, _, X = get_text_data('data/' + datasetName + '_tweets.csv', datasetName)
+    _, _, _, y, _, X = get_text_data('../data/' + datasetName + '_tweets.csv', datasetName)
 
 if datasetName == "hate":
     class_names = ['hate-speech', 'neutral']
-    _, _, _, y, _, X = get_text_data('data/' + datasetName + '_tweets.csv', datasetName)
+    _, _, _, y, _, X = get_text_data('../data/' + datasetName + '_tweets.csv', datasetName)
 
 if datasetName == "liar":
     class_names = ['fake news', 'real news']
@@ -149,6 +162,8 @@ if datasetName == "liar":
     _, X, _, y = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
 if datasetName == 'question':
+    class_names = ['entity', 'all other classes']
+
     df_train = pd.read_csv("../data/question_dataset/question_train.txt", encoding='ISO-8859-1', sep=':',
                            error_bad_lines=False, header=None)
     df_test = pd.read_csv("../data/question_dataset/question_test.txt", encoding='ISO-8859-1', sep=':',
@@ -187,14 +202,25 @@ if datasetName == 'question':
 
     _, X, _, y = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
 
-print(X)
-print(y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y, test_size=0.25)
+
+pickled_black_box_filename = '../models/' + datasetName + '_saved_' + modelName + '_model.sav'
+pickled_vectorizer_filename = '../models/' + datasetName + '_tfidf_vectorizer.pickle'
+loaded_model = pickle.load(open(pickled_black_box_filename, 'rb'))
+loaded_vectorizer = pickle.load(open(pickled_vectorizer_filename, 'rb'))
+
+if modelName is 'DNN':
+    # Use following if DNN
+    c = loaded_model
+else:
+    # Use following if RF
+    c = make_pipeline(loaded_vectorizer, loaded_model)
 
 # Load data from pickled dumps
-with open('../data/' + datasetName + '_' + modelName + '_' + 'ids', 'rb') as f:
+with open('../data/distance/' + datasetName + '_' + modelName + '_' + 'ids', 'rb') as f:
     loaded_ids = pickle.load(f)
 
-with open('../data/' + datasetName + '_' + modelName + '_' + 'top_exemplar_words', 'rb') as f:
+with open('../data/distance/' + datasetName + '_' + modelName + '_' + 'top_exemplar_words', 'rb') as f:
     loaded_top_exemplar_words = pickle.load(f)
 
 '''Find closest k sentences for final experiment'''
@@ -216,12 +242,10 @@ else:
     # Use following if RF
     c = make_pipeline(loaded_vectorizer, loaded_model)
 
-explainer = LimeTextExplainer()
-# create_lime_explanation_words()
-
 if method is 'xspells':
     top_words_dict = dict(zip(loaded_ids, loaded_top_exemplar_words))
 else:
+    explainer = LimeTextExplainer()
     create_lime_explanation_words()
 
     with open('../data/' + datasetName + '_' + modelName + '_' + 'lime_top_words', 'rb') as f:

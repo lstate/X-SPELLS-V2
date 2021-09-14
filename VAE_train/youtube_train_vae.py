@@ -17,10 +17,14 @@ sys.path.insert(0, '..')
 
 from lstm_vae import create_lstm_vae, inference
 from preprocessing.pre_processing import YOUTUBE_preProcessing
+import os
+
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 def YOUTUBE_get_text_data(num_samples, data_path, dataset):
-    thousandwords = [line.rstrip('\n') for line in open('../data/1-1000.txt')]
+    thousandwords = [line.rstrip('\n') for line in open(os.path.join(__location__, '../data/1-1000.txt'))]
 
     print('thousandwords', thousandwords)
     # vectorize the data
@@ -125,7 +129,7 @@ def YOUTUBE_get_text_data(num_samples, data_path, dataset):
         print(input_texts_cleaned[i])
         print('')
 
-    return max_encoder_seq_length, num_encoder_tokens, final_input_words, input_token_index, reverse_input_char_index, \
+    return max_encoder_seq_length, num_encoder_tokens, input_texts_cleaned, final_input_words, input_token_index, reverse_input_char_index, \
            encoder_input_data, decoder_input_data, input_texts_original, X_test, y_test, new_X_test
 
 
