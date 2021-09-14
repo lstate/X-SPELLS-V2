@@ -95,7 +95,7 @@ pipeline = make_pipeline(sequencer, padder, myModel)
 pipeline.fit(X_train, y_train)
 
 # Save the model to disk
-filename = '../models/youtube_saved_DNN_model_redone.sav'
+filename = '../models/youtube_saved_DNN_model.sav'
 pickle.dump(pipeline, open(filename, 'wb'))
 
 # Load the model from disk
