@@ -66,7 +66,7 @@ explanations.
 
 ## References
 
-[1] O. Lampridis, L. State, R. Guidotti, S. Ruggieri. [Explaining short text classification with diverse synthetic exemplars and counter-exemplars]([https://doi.org/10.1007/978-3-030-61527-7_24](https://link.springer.com/article/10.1007/s10994-022-06150-7)). Machine Learning Journal, to appear, 2022.
+[1] O. Lampridis, L. State, R. Guidotti, S. Ruggieri. [Explaining short text classification with diverse synthetic exemplars and counter-exemplars](https://link.springer.com/article/10.1007/s10994-022-06150-7). Machine Learning Journal, to appear, 2022.
 
 [2] O. Lampridis, R. Guidotti, S. Ruggieri. [Explaining Sentiment Classification with Synthetic Exemplars and
 Counter-Exemplars](https://doi.org/10.1007/978-3-030-61527-7_24). Discovery Science (DS 2020). 357-373. Vol. 12323 of LNCS, Springer, September 2020
