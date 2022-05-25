@@ -9,17 +9,14 @@ We present XSPELLS, a model-agnostic local approach for explaining the decisions
 
 ## Comments
 
-The paper is a follow-up of "Explaining Sentiment Classification with Synthetic Exemplars and Counter-Exemplars" (XSPELLS) that can be accessed here: https://doi.org/10.1007/978-3-030-61527-7_24
-
-The code of XSPELLS is available under this link: https://github.com/orestislampridis/X-SPELLS
+This repository includes the code of the paper [[1]](#references), which is a follow-up of [[2]](#references). X-SPELLS-V2 extends and replaces [X-SPELLS](https://github.com/orestislampridis/X-SPELLS).
 
 Here, we uploaded basic data as well as source code files for the SVAE and BVAE. Computations for the OVAE are the same
 but require a few substitutions for data loading. We also uploaded the version of lime we used.
 
 ### OVAE: Optimus Variational Autoencoder
 
-We used the framework introduced in the paper "Optimus: Organizing Sentences via Pre-trained Modeling of a Latent Space"
-that can be found (code and models) here: https://github.com/ChunyuanLI/Optimus
+We used the framework introduced in the paper [[3]](#references) that can be found (code and models) at https://github.com/ChunyuanLI/Optimus.
 
 To get the code running, proceed as follows:
 
@@ -69,8 +66,10 @@ explanations.
 
 ## References
 
-O. Lampridis, R. Guidotti, S. Ruggieri. Explaining Sentiment Classification with Synthetic Exemplars and
-Counter-Exemplars. Discovery Science (DS 2020). 357-373. Vol. 12323 of LNCS, Springer, September 2020
+[1] O. Lampridis, L. State, R. Guidotti, S. Ruggieri. [Explaining short text classification with diverse synthetic exemplars and counter-exemplars]([https://doi.org/10.1007/978-3-030-61527-7_24](https://link.springer.com/article/10.1007/s10994-022-06150-7)). Machine Learning Journal, to appear, 2022.
 
-Li, Chunyuan and Gao, Xiang and Li, Yuan and Li, Xiujun and Peng, Baolin and Zhang, Yizhe and Gao, Jianfeng, Optimus:
-Organizing Sentences via Pre-trained Modeling of a Latent Space, EMNLP, 2020
+[2] O. Lampridis, R. Guidotti, S. Ruggieri. [Explaining Sentiment Classification with Synthetic Exemplars and
+Counter-Exemplars](https://doi.org/10.1007/978-3-030-61527-7_24). Discovery Science (DS 2020). 357-373. Vol. 12323 of LNCS, Springer, September 2020
+
+[3] Li, Chunyuan and Gao, Xiang and Li, Yuan and Li, Xiujun and Peng, Baolin and Zhang, Yizhe and Gao, Jianfeng, [Optimus:
+Organizing Sentences via Pre-trained Modeling of a Latent Space](https://doi.org/10.18653/v1/2020.emnlp-main.378), EMNLP, 2020
